@@ -153,6 +153,19 @@ export default function Dashboard() {
     "2022": "2022", "2023": "2023", "2024": "2024", "2025": "2025",
     "2026": "2026 (Q1 · Ramadan Feb–Mar)",
   };
+
+  const RAMADAN_EXACT: Record<string, { start: string; end: string }> = {
+    "2022": { start: "2022-04-02", end: "2022-05-01" },
+    "2023": { start: "2023-03-23", end: "2023-04-21" },
+    "2024": { start: "2024-03-11", end: "2024-04-09" },
+    "2025": { start: "2025-03-01", end: "2025-03-29" },
+    "2026": { start: "2026-02-18", end: "2026-03-19" },
+  };
+  function fmtRDate(s: string): string {
+    const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const [, m, d] = s.split("-");
+    return `${MONTHS[parseInt(m)-1]} ${parseInt(d)}`;
+  }
   const ramadanData  = (analysisResponse?.ramadan || []).map((r) => ({
     year: String(r.year),
     "Ramadan Avg":    r.ramadanAvg,
@@ -469,6 +482,28 @@ export default function Dashboard() {
                   ) : (
                     <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground">Loading…</div>
                   )}
+
+                  {/* Ramadan date reference strip */}
+                  <div className="mt-4 pt-3 border-t" style={{ borderColor: gridColor }}>
+                    <div className="text-xs text-muted-foreground mb-2.5 flex items-center gap-1">
+                      <span>🌙</span> Ramadan window per year (exact dates)
+                    </div>
+                    <div className="grid grid-cols-5 gap-3">
+                      {years.map((yr) => {
+                        const r = RAMADAN_EXACT[yr];
+                        return (
+                          <div key={yr} style={{ borderLeft: `3px solid ${YEAR_COLORS[yr]}`, paddingLeft: 8 }}>
+                            <div style={{ color: YEAR_COLORS[yr], fontWeight: 700, fontSize: 13 }}>{yr}</div>
+                            <div style={{ fontSize: 11, color: tickColor, lineHeight: 1.5 }}>
+                              {fmtRDate(r.start)}<br />
+                              <span style={{ color: isDark ? "rgba(255,255,255,0.35)" : "#bbb" }}>to</span>{" "}
+                              {fmtRDate(r.end)}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -496,20 +531,28 @@ export default function Dashboard() {
                           <Bar dataKey="Normal Day Avg" fill={CHART_COLORS.blue}   fillOpacity={0.7}  isAnimationActive={false} radius={[2,2,0,0]} />
                         </BarChart>
                       </ResponsiveContainer>
-                      <div className="mt-3 grid grid-cols-5 gap-1">
-                        {ramadanData.map((r) => (
-                          <div key={r.year} className="text-center p-1.5 rounded-md" style={{ background: statBg }}>
-                            <div className="text-xs text-muted-foreground font-medium">{r.year}</div>
-                            <div className="flex items-center justify-center gap-0.5 mt-0.5">
-                              {r.changePercent > 0
-                                ? <TrendingUp   className="w-3 h-3" style={{ color: CHART_COLORS.green }} />
-                                : <TrendingDown className="w-3 h-3" style={{ color: CHART_COLORS.red   }} />}
-                              <span className="text-xs font-bold" style={{ color: r.changePercent > 0 ? CHART_COLORS.green : CHART_COLORS.red }}>
-                                {r.changePercent > 0 ? "+" : ""}{r.changePercent}%
-                              </span>
+                      <div className="mt-3 grid grid-cols-5 gap-1.5">
+                        {ramadanData.map((r) => {
+                          const period = RAMADAN_EXACT[r.year];
+                          return (
+                            <div key={r.year} className="text-center p-2 rounded-md" style={{ background: statBg, borderTop: `2px solid ${YEAR_COLORS[r.year] || "#888"}` }}>
+                              <div className="text-xs font-bold" style={{ color: YEAR_COLORS[r.year] || tickColor }}>{r.year}</div>
+                              {period && (
+                                <div className="text-xs text-muted-foreground mt-0.5" style={{ fontSize: 10, lineHeight: 1.4 }}>
+                                  {fmtRDate(period.start)}<br />– {fmtRDate(period.end)}
+                                </div>
+                              )}
+                              <div className="flex items-center justify-center gap-0.5 mt-1">
+                                {r.changePercent > 0
+                                  ? <TrendingUp   className="w-3 h-3" style={{ color: CHART_COLORS.green }} />
+                                  : <TrendingDown className="w-3 h-3" style={{ color: CHART_COLORS.red   }} />}
+                                <span className="text-xs font-bold" style={{ color: r.changePercent > 0 ? CHART_COLORS.green : CHART_COLORS.red }}>
+                                  {r.changePercent > 0 ? "+" : ""}{r.changePercent}%
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                       <p className="text-xs text-muted-foreground mt-2 text-center">% change = Ramadan avg vs rest-of-year avg</p>
                     </>
