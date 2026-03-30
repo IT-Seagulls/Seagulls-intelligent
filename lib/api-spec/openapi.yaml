@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: traffic
+    description: Traffic data operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /traffic/hourly:
+    get:
+      operationId: getHourlyTraffic
+      tags: [traffic]
+      summary: Get hourly traffic data for all locations
+      description: Returns vehicle counts by hour for each location
+      responses:
+        "200":
+          description: Hourly traffic data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HourlyTrafficResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +48,66 @@ components:
           type: string
       required:
         - status
-
+    HourlyTrafficEntry:
+      type: object
+      properties:
+        hour:
+          type: string
+          description: Hour label (e.g. "12am", "01am")
+        hourIndex:
+          type: integer
+          description: 0-based hour index for sorting
+        airportRoad:
+          type: number
+          description: Vehicle count for Airport Road
+        amman:
+          type: number
+          description: Vehicle count for Amman
+      required:
+        - hour
+        - hourIndex
+        - airportRoad
+        - amman
+    HourlyTrafficResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/HourlyTrafficEntry"
+        peakHour:
+          type: object
+          properties:
+            airportRoad:
+              type: string
+            amman:
+              type: string
+          required:
+            - airportRoad
+            - amman
+        eveningDropHour:
+          type: object
+          description: The hour when traffic drops significantly in the evening (after 5pm)
+          properties:
+            airportRoad:
+              type: string
+            amman:
+              type: string
+          required:
+            - airportRoad
+            - amman
+        totalVehicles:
+          type: object
+          properties:
+            airportRoad:
+              type: number
+            amman:
+              type: number
+          required:
+            - airportRoad
+            - amman
+      required:
+        - data
+        - peakHour
+        - eveningDropHour
+        - totalVehicles

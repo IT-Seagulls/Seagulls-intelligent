@@ -13,7 +13,7 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type { HealthStatus, HourlyTrafficResponse } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
 import type { ErrorType } from "../custom-fetch";
@@ -92,6 +92,82 @@ export function useHealthCheck<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getHealthCheckQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns vehicle counts by hour for each location
+ * @summary Get hourly traffic data for all locations
+ */
+export const getGetHourlyTrafficUrl = () => {
+  return `/api/traffic/hourly`;
+};
+
+export const getHourlyTraffic = async (
+  options?: RequestInit,
+): Promise<HourlyTrafficResponse> => {
+  return customFetch<HourlyTrafficResponse>(getGetHourlyTrafficUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetHourlyTrafficQueryKey = () => {
+  return [`/api/traffic/hourly`] as const;
+};
+
+export const getGetHourlyTrafficQueryOptions = <
+  TData = Awaited<ReturnType<typeof getHourlyTraffic>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getHourlyTraffic>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetHourlyTrafficQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getHourlyTraffic>>
+  > = ({ signal }) => getHourlyTraffic({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getHourlyTraffic>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetHourlyTrafficQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getHourlyTraffic>>
+>;
+export type GetHourlyTrafficQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get hourly traffic data for all locations
+ */
+
+export function useGetHourlyTraffic<
+  TData = Awaited<ReturnType<typeof getHourlyTraffic>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getHourlyTraffic>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetHourlyTrafficQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

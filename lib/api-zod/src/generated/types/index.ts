@@ -7,3 +7,8 @@
  */
 
 export * from "./healthStatus";
+export * from "./hourlyTrafficEntry";
+export * from "./hourlyTrafficResponse";
+export * from "./hourlyTrafficResponseEveningDropHour";
+export * from "./hourlyTrafficResponsePeakHour";
+export * from "./hourlyTrafficResponseTotalVehicles";

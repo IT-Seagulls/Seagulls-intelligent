@@ -8,3 +8,40 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface HourlyTrafficEntry {
+  /** Hour label (e.g. "12am", "01am") */
+  hour: string;
+  /** 0-based hour index for sorting */
+  hourIndex: number;
+  /** Vehicle count for Airport Road */
+  airportRoad: number;
+  /** Vehicle count for Amman */
+  amman: number;
+}
+
+export type HourlyTrafficResponsePeakHour = {
+  airportRoad: string;
+  amman: string;
+};
+
+/**
+ * The hour when traffic drops significantly in the evening (after 5pm)
+ */
+export type HourlyTrafficResponseEveningDropHour = {
+  airportRoad: string;
+  amman: string;
+};
+
+export type HourlyTrafficResponseTotalVehicles = {
+  airportRoad: number;
+  amman: number;
+};
+
+export interface HourlyTrafficResponse {
+  data: HourlyTrafficEntry[];
+  peakHour: HourlyTrafficResponsePeakHour;
+  /** The hour when traffic drops significantly in the evening (after 5pm) */
+  eveningDropHour: HourlyTrafficResponseEveningDropHour;
+  totalVehicles: HourlyTrafficResponseTotalVehicles;
+}

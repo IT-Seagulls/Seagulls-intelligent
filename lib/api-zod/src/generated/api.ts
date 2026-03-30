@@ -14,3 +14,34 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Returns vehicle counts by hour for each location
+ * @summary Get hourly traffic data for all locations
+ */
+export const GetHourlyTrafficResponse = zod.object({
+  data: zod.array(
+    zod.object({
+      hour: zod.string().describe('Hour label (e.g. \"12am\", \"01am\")'),
+      hourIndex: zod.number().describe("0-based hour index for sorting"),
+      airportRoad: zod.number().describe("Vehicle count for Airport Road"),
+      amman: zod.number().describe("Vehicle count for Amman"),
+    }),
+  ),
+  peakHour: zod.object({
+    airportRoad: zod.string(),
+    amman: zod.string(),
+  }),
+  eveningDropHour: zod
+    .object({
+      airportRoad: zod.string(),
+      amman: zod.string(),
+    })
+    .describe(
+      "The hour when traffic drops significantly in the evening (after 5pm)",
+    ),
+  totalVehicles: zod.object({
+    airportRoad: zod.number(),
+    amman: zod.number(),
+  }),
+});
