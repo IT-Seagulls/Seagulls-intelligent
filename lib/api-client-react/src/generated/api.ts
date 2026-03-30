@@ -14,6 +14,7 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  DeviceHealthResponse,
   HealthStatus,
   HourlyTrafficResponse,
   MonthlyTrafficResponse,
@@ -330,5 +331,72 @@ export function useGetTrafficAnalysis<
     queryKey: QueryKey;
   };
 
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns how many screens are online and which are offline
+ * @summary Get live screen health status
+ */
+export const getGetDeviceHealthUrl = () => {
+  return `/api/traffic/devices/health`;
+};
+
+export const getDeviceHealth = async (
+  options?: RequestInit,
+): Promise<DeviceHealthResponse> => {
+  return customFetch<DeviceHealthResponse>(getGetDeviceHealthUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDeviceHealthQueryKey = () => {
+  return [`/api/traffic/devices/health`] as const;
+};
+
+export const getGetDeviceHealthQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDeviceHealth>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDeviceHealth>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetDeviceHealthQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceHealth>>> = ({
+    signal,
+  }) => getDeviceHealth({ signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDeviceHealth>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDeviceHealthQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDeviceHealth>>
+>;
+export type GetDeviceHealthQueryError = ErrorType<unknown>;
+
+export function useGetDeviceHealth<
+  TData = Awaited<ReturnType<typeof getDeviceHealth>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDeviceHealth>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDeviceHealthQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
   return { ...query, queryKey: queryOptions.queryKey };
 }

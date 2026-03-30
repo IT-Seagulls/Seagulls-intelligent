@@ -200,6 +200,68 @@ function findEveningDropHour(data: HourlyEntry[], location: "airportRoad" | "amm
   return maxDropHour;
 }
 
+// ── Device health cache ──
+interface DeviceHealthCache {
+  fetchedAt: number;
+  total: number;
+  activeCount: number;
+  offlineDevices: { id: string; name: string; lastSeen: string | null }[];
+}
+let deviceHealthCache: DeviceHealthCache | null = null;
+const HEALTH_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+async function fetchDeviceHealth(): Promise<DeviceHealthCache> {
+  const now = Date.now();
+  if (deviceHealthCache && now - deviceHealthCache.fetchedAt < HEALTH_CACHE_TTL_MS) {
+    return deviceHealthCache;
+  }
+
+  const token = await getAdmobilizeToken();
+  const r = await fetch(
+    `${ADMOBILIZE_BASE}/projects/${PROJECT_ID}/devices?pageSize=200`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  const j = (await r.json()) as {
+    devices?: {
+      id: string;
+      displayName: string;
+      state?: { online?: boolean; updateTime?: string };
+    }[];
+  };
+
+  const devices = j.devices ?? [];
+  const offlineDevices = devices
+    .filter((d) => !d.state?.online)
+    .map((d) => ({
+      id: d.id,
+      name: d.displayName,
+      lastSeen: d.state?.updateTime ?? null,
+    }));
+
+  deviceHealthCache = {
+    fetchedAt: now,
+    total: devices.length,
+    activeCount: devices.filter((d) => d.state?.online).length,
+    offlineDevices,
+  };
+  return deviceHealthCache;
+}
+
+router.get("/devices/health", async (req: Request, res) => {
+  try {
+    const health = await fetchDeviceHealth();
+    res.json({
+      total: health.total,
+      activeCount: health.activeCount,
+      offlineCount: health.offlineDevices.length,
+      offlineDevices: health.offlineDevices,
+      checkedAt: new Date(health.fetchedAt).toISOString(),
+    });
+  } catch (err) {
+    res.status(502).json({ error: "Failed to fetch device health" });
+  }
+});
+
 router.get("/hourly", async (req: Request, res) => {
   const date = (req.query.date as string) || todayAmman();
 

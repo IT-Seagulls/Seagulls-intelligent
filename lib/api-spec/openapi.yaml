@@ -52,6 +52,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MonthlyTrafficResponse"
+  /traffic/devices/health:
+    get:
+      operationId: getDeviceHealth
+      tags: [traffic]
+      summary: Get live screen health status
+      description: Returns how many screens are online and which are offline
+      responses:
+        "200":
+          description: Device health data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceHealthResponse"
   /traffic/history/analysis:
     get:
       operationId: getTrafficAnalysis
@@ -210,6 +223,41 @@ components:
             $ref: "#/components/schemas/MonthlyTrafficEntry"
       required:
         - data
+    OfflineDevice:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        lastSeen:
+          type: string
+          nullable: true
+      required:
+        - id
+        - name
+        - lastSeen
+    DeviceHealthResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        activeCount:
+          type: integer
+        offlineCount:
+          type: integer
+        offlineDevices:
+          type: array
+          items:
+            $ref: "#/components/schemas/OfflineDevice"
+        checkedAt:
+          type: string
+      required:
+        - total
+        - activeCount
+        - offlineCount
+        - offlineDevices
+        - checkedAt
     RamadanYearStat:
       type: object
       properties:

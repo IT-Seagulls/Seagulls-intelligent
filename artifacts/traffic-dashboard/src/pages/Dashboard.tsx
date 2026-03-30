@@ -4,6 +4,7 @@ import {
   useGetHourlyTraffic,
   useGetMonthlyTraffic,
   useGetTrafficAnalysis,
+  useGetDeviceHealth,
 } from "@workspace/api-client-react";
 import { CSVLink } from "react-csv";
 import {
@@ -17,7 +18,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   RefreshCw, ChevronDown, Check,
   Sun, Moon, Download, Printer, Clock, TrendingUp, TrendingDown,
-  BarChart2, Lightbulb,
+  BarChart2, Lightbulb, Monitor,
 } from "lucide-react";
 
 const CHART_COLORS = {
@@ -87,6 +88,9 @@ export default function Dashboard() {
   const { data: hourlyResponse, isLoading: hourlyLoading, isFetching: hourlyFetching, dataUpdatedAt } = useGetHourlyTraffic();
   const { data: monthlyResponse, isLoading: monthlyLoading } = useGetMonthlyTraffic();
   const { data: analysisResponse, isLoading: analysisLoading } = useGetTrafficAnalysis();
+  const { data: healthResponse, isLoading: healthLoading } = useGetDeviceHealth({
+    query: { refetchInterval: 5 * 60 * 1000 },
+  });
 
   const loading = hourlyLoading || hourlyFetching;
 
@@ -234,6 +238,48 @@ export default function Dashboard() {
 
           {/* ════════════ OVERVIEW TAB ════════════ */}
           <TabsContent value="overview">
+
+            {/* Screen Health Banner */}
+            {healthLoading ? (
+              <Skeleton className="w-full h-14 mb-4 rounded-xl" />
+            ) : healthResponse && (
+              (() => {
+                const { total, activeCount, offlineCount, offlineDevices } = healthResponse;
+                const allGood = offlineCount === 0;
+                const bgColor  = allGood
+                  ? (isDark ? "rgba(0,145,24,0.12)"  : "rgba(0,145,24,0.08)")
+                  : (isDark ? "rgba(166,8,8,0.15)"   : "rgba(166,8,8,0.08)");
+                const borderColor = allGood ? "rgba(0,145,24,0.35)" : "rgba(166,8,8,0.35)";
+                const textColor   = allGood ? CHART_COLORS.green    : CHART_COLORS.red;
+                return (
+                  <div className="mb-4 rounded-xl px-5 py-3 flex flex-wrap items-center gap-x-4 gap-y-2"
+                    style={{ background: bgColor, border: `1px solid ${borderColor}` }}>
+                    <div className="flex items-center gap-2.5">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${allGood ? "animate-ping bg-green-500" : "bg-red-500"}`} />
+                        <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${allGood ? "bg-green-500" : "bg-red-500"}`} />
+                      </span>
+                      <Monitor className="w-4 h-4" style={{ color: textColor }} />
+                      <span className="font-bold text-[15px]" style={{ color: textColor }}>
+                        {activeCount} / {total} Screens Active
+                      </span>
+                      {allGood && <span className="text-sm text-muted-foreground">— All screens reporting</span>}
+                    </div>
+                    {!allGood && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-sm text-muted-foreground">Offline:</span>
+                        {offlineDevices.map((d) => (
+                          <span key={d.id} className="text-xs font-semibold px-2 py-0.5 rounded"
+                            style={{ background: "rgba(166,8,8,0.18)", color: CHART_COLORS.red }}>
+                            {d.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()
+            )}
 
             {/* KPI Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-5">

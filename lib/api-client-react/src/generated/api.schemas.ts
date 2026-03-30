@@ -131,6 +131,20 @@ export type TrafficAnalysisResponseRamadanPeriodsItem = {
   end?: string;
 };
 
+export interface OfflineDevice {
+  id: string;
+  name: string;
+  lastSeen: string | null;
+}
+
+export interface DeviceHealthResponse {
+  total: number;
+  activeCount: number;
+  offlineCount: number;
+  offlineDevices: OfflineDevice[];
+  checkedAt: string;
+}
+
 export interface TrafficAnalysisResponse {
   ramadan: RamadanYearStat[];
   war: TrafficAnalysisResponseWar;
