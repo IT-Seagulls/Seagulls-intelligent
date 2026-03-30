@@ -20,7 +20,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   RefreshCw, ChevronDown, Check,
   Sun, Moon, Download, Printer, Clock, TrendingUp, TrendingDown,
-  BarChart2, Lightbulb, Monitor,
+  BarChart2, Lightbulb, Monitor, Info,
 } from "lucide-react";
 
 const CHART_COLORS = {
@@ -61,6 +61,31 @@ function CustomTooltip({ active, payload, label }: any) {
           <span style={{ marginLeft: "auto", fontWeight: 600 }}>{typeof e.value === "number" ? e.value.toLocaleString() : e.value}</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+function InfoTooltip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
+      onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <Info className="w-3.5 h-3.5 cursor-default" style={{ color: "#9ca3af", flexShrink: 0 }} />
+      {open && (
+        <div style={{
+          position: "absolute", bottom: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)",
+          background: "#1f2937", color: "#f3f4f6", fontSize: 12, lineHeight: 1.5,
+          borderRadius: 6, padding: "6px 10px", whiteSpace: "normal", width: 210,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)", zIndex: 50, pointerEvents: "none",
+        }}>
+          {text}
+          <div style={{
+            position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)",
+            borderLeft: "5px solid transparent", borderRight: "5px solid transparent",
+            borderTop: "5px solid #1f2937",
+          }} />
+        </div>
+      )}
     </div>
   );
 }
@@ -344,7 +369,7 @@ export default function Dashboard() {
             <div className="mb-4">
               <Card>
                 <CardHeader className="px-4 pt-4 pb-2 flex-row items-center justify-between space-y-0">
-                  <CardTitle className="text-base">Hourly Traffic Volume — Today</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-1.5">Hourly Traffic Volume — Today <InfoTooltip text="Vehicle counts per hour for today, split by Airport Road sensors and the Amman city network. Refreshes every few minutes." /></CardTitle>
                   {!loading && chartData.length > 0 && (
                     <CSVLink data={chartData} filename="hourly-traffic-volume.csv"
                       className="print:hidden flex items-center justify-center w-[26px] h-[26px] rounded-[6px] hover:opacity-80"
@@ -388,7 +413,7 @@ export default function Dashboard() {
             {/* Hourly Bar Chart */}
             <Card>
               <CardHeader className="px-4 pt-4 pb-2 flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-base">Traffic Comparison by Hour</CardTitle>
+                <CardTitle className="text-base flex items-center gap-1.5">Traffic Comparison by Hour <InfoTooltip text="Compares today's hourly counts against the same day last week, for both Airport Road and the Amman network." /></CardTitle>
                 {!loading && chartData.length > 0 && (
                   <CSVLink data={chartData} filename="traffic-comparison.csv"
                     className="print:hidden flex items-center justify-center w-[26px] h-[26px] rounded-[6px] hover:opacity-80"
@@ -422,7 +447,7 @@ export default function Dashboard() {
             <div className="mt-5">
               <Card>
                 <CardHeader className="px-4 pt-4 pb-2">
-                  <CardTitle className="text-base">📊 Screen Performance vs Last Week</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-1.5">📊 Screen Performance vs Last Week <InfoTooltip text="Ranks individual screens by how much their daily count changed vs 7 days ago. Screens with very low traffic last week are excluded to avoid skewed percentages." /></CardTitle>
                   {moversResponse && (
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Today ({moversResponse.today}) vs same day last week ({moversResponse.lastWeek}) · per screen total
@@ -519,7 +544,7 @@ export default function Dashboard() {
             <div className="mb-5">
               <Card>
                 <CardHeader className="px-4 pt-4 pb-2">
-                  <CardTitle className="text-base">📈 Year-over-Year Traffic — Amman (Daily Average)</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-1.5">📈 Year-over-Year Traffic — Amman (Daily Average) <InfoTooltip text="Each line is one full calendar year plotted Jan–Dec. Compare seasonality and trends across 2022–2026. 2026 is dashed since only Q1 data is available." /></CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">
                     Each line = one calendar year · overlaid by month for direct comparison
                   </p>
@@ -601,7 +626,7 @@ export default function Dashboard() {
             <div className="mb-5">
               <Card>
                 <CardHeader className="px-4 pt-4 pb-2">
-                  <CardTitle className="text-base">🌙 Ramadan Impact on Traffic</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-1.5">🌙 Ramadan Impact on Traffic <InfoTooltip text="Compares the daily average count during each Ramadan period against normal days in that same year. Negative % means traffic dropped during Ramadan." /></CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">Daily average during Ramadan vs normal days · Amman network</p>
                 </CardHeader>
                 <CardContent>
@@ -675,7 +700,7 @@ export default function Dashboard() {
                     {/* By condition */}
                     <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base">Traffic by Weather Condition</CardTitle>
+                        <CardTitle className="text-base flex items-center gap-1.5">Traffic by Weather Condition <InfoTooltip text="Average daily traffic grouped by weather type. The % shows how each condition compares to clear-sky days." /></CardTitle>
                         <p className="text-xs text-muted-foreground mt-1">Avg daily count per condition · Amman network · {weatherData.totalDays} days</p>
                       </CardHeader>
                       <CardContent>
@@ -709,7 +734,7 @@ export default function Dashboard() {
                     {/* By temperature */}
                     <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base">Traffic by Temperature Band</CardTitle>
+                        <CardTitle className="text-base flex items-center gap-1.5">Traffic by Temperature Band <InfoTooltip text="Average daily traffic grouped by the day's maximum temperature. Warmer days in Amman tend to see more movement." /></CardTitle>
                         <p className="text-xs text-muted-foreground mt-1">Avg daily count by max daily temperature</p>
                       </CardHeader>
                       <CardContent>
@@ -743,7 +768,7 @@ export default function Dashboard() {
                     {/* By precipitation */}
                     <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base">Traffic by Rainfall</CardTitle>
+                        <CardTitle className="text-base flex items-center gap-1.5">Traffic by Rainfall <InfoTooltip text="Average daily traffic on dry, drizzly, and heavy-rain days. The % is relative to no-rain days." /></CardTitle>
                         <p className="text-xs text-muted-foreground mt-1">Avg daily count by precipitation level</p>
                       </CardHeader>
                       <CardContent>
@@ -782,7 +807,7 @@ export default function Dashboard() {
                     {/* Key findings */}
                     <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base">Key Findings</CardTitle>
+                        <CardTitle className="text-base flex items-center gap-1.5">Key Findings <InfoTooltip text="Pearson r measures linear correlation from −1 to +1. Values near ±1 indicate a strong relationship; near 0 means little connection." /></CardTitle>
                         <p className="text-xs text-muted-foreground mt-1">Statistical relationship between weather and traffic</p>
                       </CardHeader>
                       <CardContent>
@@ -830,7 +855,7 @@ export default function Dashboard() {
                   {/* Row 3 — Monthly temp + traffic dual-axis */}
                   <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Monthly Traffic vs Temperature Trend</CardTitle>
+                      <CardTitle className="text-base flex items-center gap-1.5">Monthly Traffic vs Temperature Trend <InfoTooltip text="Monthly average daily traffic (bars) alongside average daily max temperature (line), covering 2022–2026." /></CardTitle>
                       <p className="text-xs text-muted-foreground mt-1">Avg daily traffic (bars) vs avg daily max temperature (line) · 2022–2026</p>
                     </CardHeader>
                     <CardContent>
