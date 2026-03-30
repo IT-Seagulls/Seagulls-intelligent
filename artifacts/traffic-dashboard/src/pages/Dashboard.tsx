@@ -8,9 +8,8 @@ import {
 } from "@workspace/api-client-react";
 import { CSVLink } from "react-csv";
 import {
-  AreaChart, Area, BarChart, Bar, LineChart, Line, ReferenceLine,
+  AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  ComposedChart,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -138,16 +137,12 @@ export default function Dashboard() {
   const tickColor    = isDark ? "#98999C" : "#71717a";
 
   const monthlyData  = (monthlyResponse?.data || []).map((m) => ({ ...m, label: formatMonth(m.month) }));
-  const warTimeline  = (analysisResponse?.war?.timeline || []).map((t) => ({ label: formatMonth(t.month), avg: t.avg }));
-  const iranEvents   = analysisResponse?.iran || [];
   const ramadanData  = (analysisResponse?.ramadan || []).map((r) => ({
     year: String(r.year),
     "Ramadan Avg":    r.ramadanAvg,
     "Normal Day Avg": r.normalAvg,
     changePercent:    r.changePercent,
   }));
-  const war = analysisResponse?.war;
-
   const statBg = isDark ? "rgba(255,255,255,0.05)" : "#f5f5f5";
 
   return (
@@ -422,12 +417,6 @@ export default function Dashboard() {
                         <YAxis tickFormatter={formatCompact} tick={{ fontSize: 12, fill: tickColor }} stroke={tickColor} tickMargin={10} axisLine={false} tickLine={false} />
                         <Tooltip content={<CustomTooltip />} isAnimationActive={false} />
                         <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: 20 }} />
-                        <ReferenceLine x="Oct '23" stroke={CHART_COLORS.red} strokeDasharray="4 3" strokeWidth={2}
-                          label={{ value: "Gaza War", fill: CHART_COLORS.red, fontSize: 11 }} />
-                        <ReferenceLine x="Apr '24" stroke={CHART_COLORS.amber} strokeDasharray="4 3" strokeWidth={1.5}
-                          label={{ value: "Iran ①", fill: CHART_COLORS.amber, fontSize: 10 }} />
-                        <ReferenceLine x="Oct '24" stroke={CHART_COLORS.amber} strokeDasharray="4 3" strokeWidth={1.5}
-                          label={{ value: "Iran ②", fill: CHART_COLORS.amber, fontSize: 10 }} />
                         <Line type="monotone" dataKey="ammanDailyAvg" name="Amman Daily Avg" stroke={CHART_COLORS.purple} strokeWidth={2} dot={false} isAnimationActive={false} />
                       </LineChart>
                     </ResponsiveContainer>
@@ -438,10 +427,8 @@ export default function Dashboard() {
               </Card>
             </div>
 
-            {/* Ramadan + Gaza War side-by-side */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-5">
-
-              {/* Ramadan */}
+            {/* Ramadan */}
+            <div className="mb-5">
               <Card>
                 <CardHeader className="px-4 pt-4 pb-2">
                   <CardTitle className="text-base">🌙 Ramadan Impact on Traffic</CardTitle>
@@ -486,63 +473,6 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              {/* Gaza War */}
-              <Card>
-                <CardHeader className="px-4 pt-4 pb-2">
-                  <CardTitle className="text-base">⚔️ Gaza War Impact on Jordan Traffic</CardTitle>
-                  <p className="text-xs text-muted-foreground mt-1">Amman daily avg before and after Oct 7, 2023</p>
-                </CardHeader>
-                <CardContent>
-                  {analysisLoading ? (
-                    <Skeleton className="w-full h-[280px]" />
-                  ) : war ? (
-                    <>
-                      <div className="grid grid-cols-3 gap-3 mb-4">
-                        {[
-                          { label: "Pre-War Daily Avg",  value: formatCompact(war.preWarAvgDaily),  sub: `${war.preWarDays} days`,  color: CHART_COLORS.teal  },
-                          { label: "Post-War Daily Avg", value: formatCompact(war.postWarAvgDaily), sub: `${war.postWarDays} days`, color: CHART_COLORS.amber },
-                          { label: "Overall Change",
-                            value: (
-                              <div className="flex items-center justify-center gap-1 mt-1">
-                                {war.changePercent > 0 ? <TrendingUp className="w-4 h-4" style={{ color: CHART_COLORS.green }} /> : <TrendingDown className="w-4 h-4" style={{ color: CHART_COLORS.red }} />}
-                                <span className="text-lg font-bold" style={{ color: war.changePercent > 0 ? CHART_COLORS.green : CHART_COLORS.red }}>
-                                  {war.changePercent > 0 ? "+" : ""}{war.changePercent}%
-                                </span>
-                              </div>
-                            ),
-                            sub: "vs pre-war", color: war.changePercent > 0 ? CHART_COLORS.green : CHART_COLORS.red },
-                        ].map((s, i) => (
-                          <div key={i} className="p-3 rounded-lg text-center" style={{ background: statBg }}>
-                            <div className="text-xs text-muted-foreground">{s.label}</div>
-                            {typeof s.value === "string"
-                              ? <div className="text-lg font-bold mt-1" style={{ color: s.color }}>{s.value}</div>
-                              : s.value}
-                            <div className="text-xs text-muted-foreground mt-0.5">{s.sub}</div>
-                          </div>
-                        ))}
-                      </div>
-                      <ResponsiveContainer width="100%" height={160} debounce={0}>
-                        <AreaChart data={warTimeline} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="gradWar" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%"   stopColor={CHART_COLORS.amber} stopOpacity={0.4} />
-                              <stop offset="100%" stopColor={CHART_COLORS.amber} stopOpacity={0.02} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-                          <XAxis dataKey="label" tick={{ fontSize: 10, fill: tickColor }} stroke={tickColor} tickMargin={8} interval={5} />
-                          <YAxis tickFormatter={formatCompact} tick={{ fontSize: 10, fill: tickColor }} stroke={tickColor} tickMargin={8} axisLine={false} tickLine={false} />
-                          <Tooltip content={<CustomTooltip />} isAnimationActive={false} />
-                          <Area type="monotone" dataKey="avg" name="Amman Daily Avg" fill="url(#gradWar)" stroke={CHART_COLORS.amber} strokeWidth={2} dot={false} isAnimationActive={false} />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                      <p className="text-xs text-muted-foreground mt-2 text-center">Monthly averages Oct 2023 – Mar 2026</p>
-                    </>
-                  ) : (
-                    <div className="w-full h-[280px] flex items-center justify-center text-muted-foreground">Loading…</div>
-                  )}
-                </CardContent>
-              </Card>
             </div>
 
 

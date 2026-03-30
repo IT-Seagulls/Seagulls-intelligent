@@ -95,8 +95,8 @@ async function fetchHourlyFromApi(date: string): Promise<{ arHour: number[]; amH
     const name = cols[2]?.trim() ?? "";
     const count = parseFloat(cols[10]) || 0;
     if (!ts) continue;
-    const utcHour = parseInt(ts.slice(11, 13));
-    const localHour = (utcHour + 3) % 24;
+    // Timestamps are already in Amman local time (timezone: "Asia/Amman" in request)
+    const localHour = parseInt(ts.slice(11, 13));
     if (AR_RE.test(name)) arHour[localHour] += count;
     else amHour[localHour] += count;
   }
