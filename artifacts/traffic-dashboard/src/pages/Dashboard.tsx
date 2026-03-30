@@ -7,7 +7,10 @@ import {
   useGetDeviceHealth,
   useGetDeviceMovers,
   useGetWeatherCorrelation,
+  useGetDeviceLocations,
 } from "@workspace/api-client-react";
+import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 import { CSVLink } from "react-csv";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -20,7 +23,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   RefreshCw, ChevronDown, Check,
   Sun, Moon, Download, Printer, Clock, TrendingUp, TrendingDown,
-  BarChart2, Lightbulb, Monitor, Info,
+  BarChart2, Lightbulb, Monitor, Info, MapPin,
 } from "lucide-react";
 
 const CHART_COLORS = {
@@ -113,6 +116,7 @@ export default function Dashboard() {
     query: { refetchInterval: 5 * 60 * 1000 },
   });
   const { data: weatherData, isLoading: weatherLoading } = useGetWeatherCorrelation();
+  const { data: locData } = useGetDeviceLocations({ query: { refetchInterval: 5 * 60 * 1000 } });
   const { data: moversResponse, isLoading: moversLoading } = useGetDeviceMovers({
     query: { staleTime: 30 * 60 * 1000 },
   });
@@ -289,6 +293,10 @@ export default function Dashboard() {
             <TabsTrigger value="insights" className="flex items-center gap-1.5 text-sm h-7 px-4 data-[state=active]:shadow-sm">
               <Lightbulb className="w-3.5 h-3.5" />
               Insights
+            </TabsTrigger>
+            <TabsTrigger value="map" className="flex items-center gap-1.5 text-sm h-7 px-4 data-[state=active]:shadow-sm">
+              <MapPin className="w-3.5 h-3.5" />
+              Map
             </TabsTrigger>
           </TabsList>
 
@@ -898,6 +906,86 @@ export default function Dashboard() {
             </div>
 
           </TabsContent>
+
+          {/* ════════════ MAP TAB ════════════ */}
+          <TabsContent value="map">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-semibold">Screen Locations — Amman Network</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {locData ? `${locData.devices.length} screens · ` : ""}
+                  Green = online · Red = offline · Gray = status unknown
+                </p>
+              </div>
+              {locData && (
+                <div className="flex items-center gap-3 text-sm">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full inline-block" style={{ background: "#16a34a" }} />
+                    Online ({locData.devices.filter((d) => d.status === "online").length})
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full inline-block" style={{ background: "#dc2626" }} />
+                    Offline ({locData.devices.filter((d) => d.status === "offline").length})
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <Card style={{ overflow: "hidden", background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
+              <div style={{ height: 520 }}>
+                {locData ? (
+                  <MapContainer
+                    center={[31.968, 35.872]}
+                    zoom={13}
+                    style={{ height: "100%", width: "100%" }}
+                    scrollWheelZoom={true}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {locData.devices.map((d) => {
+                      const color =
+                        d.status === "online" ? "#16a34a" :
+                        d.status === "offline" ? "#dc2626" : "#6b7280";
+                      const isLarge = d.size.includes("3.25");
+                      return (
+                        <CircleMarker
+                          key={d.name}
+                          center={[d.lat, d.lng]}
+                          radius={isLarge ? 9 : 6}
+                          pathOptions={{
+                            fillColor: color,
+                            color: "#fff",
+                            weight: 1.5,
+                            fillOpacity: 0.9,
+                          }}
+                        >
+                          <Popup>
+                            <div style={{ fontSize: 13, lineHeight: 1.6, minWidth: 160 }}>
+                              <div style={{ fontWeight: 700, marginBottom: 4 }}>{d.name}</div>
+                              <div style={{ color: "#555", marginBottom: 4 }}>{d.address}</div>
+                              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                <span style={{ background: color, color: "#fff", borderRadius: 4, padding: "1px 6px", fontSize: 11, fontWeight: 600 }}>
+                                  {d.status.toUpperCase()}
+                                </span>
+                                <span style={{ background: "#f0f0f0", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>
+                                  {d.size}
+                                </span>
+                              </div>
+                            </div>
+                          </Popup>
+                        </CircleMarker>
+                      );
+                    })}
+                  </MapContainer>
+                ) : (
+                  <Skeleton className="w-full h-full" />
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+
         </Tabs>
 
       </div>

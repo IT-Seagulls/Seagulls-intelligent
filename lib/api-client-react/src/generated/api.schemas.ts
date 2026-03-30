@@ -145,6 +145,21 @@ export interface DeviceHealthResponse {
   checkedAt: string;
 }
 
+export interface DeviceMapPin {
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  size: string;
+  azimuth: number;
+  status: "online" | "offline" | "unknown";
+}
+
+export interface DeviceLocationsResponse {
+  devices: DeviceMapPin[];
+  checkedAt: string | null;
+}
+
 export interface WeatherBucket {
   label: string;
   emoji?: string;

@@ -9,6 +9,20 @@ const dataDir = path.resolve(__dirname, "../data");
 
 const router: IRouter = Router();
 
+// ── Device location data (from devices.json) ──
+interface DeviceLocation {
+  name: string; screenId: number; address: string;
+  lat: number; lng: number; pixels: string; size: string; azimuth: number;
+}
+let _deviceLocations: DeviceLocation[] | null = null;
+function getDeviceLocations(): DeviceLocation[] {
+  if (!_deviceLocations) {
+    const f = path.join(dataDir, "devices.json");
+    _deviceLocations = fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf-8")) : [];
+  }
+  return _deviceLocations!;
+}
+
 interface HourlyEntry {
   hour: string;
   hourIndex: number;
@@ -420,6 +434,28 @@ router.get("/hourly", async (req: Request, res) => {
       dominantCondition: wmoLabel(dominantCode),
     },
   });
+});
+
+router.get("/devices/locations", async (req: Request, res) => {
+  const locs = getDeviceLocations();
+  // Enrich with current health if cache is warm
+  const health = deviceHealthCache;
+  const offlineSet = new Set(health?.offlineDevices.map((d) => d.name) ?? []);
+  const onlineSet = new Set<string>();
+  if (health) {
+    health.offlineDevices.forEach((d) => { /* already in offlineSet */ });
+    // We don't have a per-device online list in the cache; derive from total counts
+  }
+  const devices = locs.map((d) => ({
+    name: d.name,
+    address: d.address,
+    lat: d.lat,
+    lng: d.lng,
+    size: d.size,
+    azimuth: d.azimuth,
+    status: health ? (offlineSet.has(d.name) ? "offline" : "online") : "unknown",
+  }));
+  res.json({ devices, checkedAt: health?.checkedAt ?? null });
 });
 
 export default router;
