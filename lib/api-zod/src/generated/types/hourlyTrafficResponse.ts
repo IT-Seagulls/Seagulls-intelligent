@@ -9,6 +9,7 @@ import type { HourlyTrafficEntry } from "./hourlyTrafficEntry";
 import type { HourlyTrafficResponseEveningDropHour } from "./hourlyTrafficResponseEveningDropHour";
 import type { HourlyTrafficResponsePeakHour } from "./hourlyTrafficResponsePeakHour";
 import type { HourlyTrafficResponseTotalVehicles } from "./hourlyTrafficResponseTotalVehicles";
+import type { HourlyTrafficResponseWeatherSummary } from "./hourlyTrafficResponseWeatherSummary";
 
 export interface HourlyTrafficResponse {
   data: HourlyTrafficEntry[];
@@ -16,4 +17,6 @@ export interface HourlyTrafficResponse {
   /** The hour when traffic drops significantly in the evening (after 5pm) */
   eveningDropHour: HourlyTrafficResponseEveningDropHour;
   totalVehicles: HourlyTrafficResponseTotalVehicles;
+  /** Weather summary for the day */
+  weatherSummary: HourlyTrafficResponseWeatherSummary;
 }

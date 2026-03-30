@@ -15,4 +15,14 @@ export interface HourlyTrafficEntry {
   airportRoad: number;
   /** Vehicle count for Amman */
   amman: number;
+  /** Temperature in Celsius */
+  temperature: number;
+  /** Precipitation in mm */
+  precipitation: number;
+  /** Wind speed in km/h */
+  windspeed: number;
+  /** WMO weather condition code */
+  weatherCode: number;
+  /** Human-readable weather description */
+  weatherLabel: string;
 }

@@ -16,8 +16,8 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
- * Returns vehicle counts by hour for each location
- * @summary Get hourly traffic data for all locations
+ * Returns vehicle counts by hour for each location, combined with weather observations
+ * @summary Get hourly traffic data with weather for all locations
  */
 export const GetHourlyTrafficResponse = zod.object({
   data: zod.array(
@@ -26,6 +26,11 @@ export const GetHourlyTrafficResponse = zod.object({
       hourIndex: zod.number().describe("0-based hour index for sorting"),
       airportRoad: zod.number().describe("Vehicle count for Airport Road"),
       amman: zod.number().describe("Vehicle count for Amman"),
+      temperature: zod.number().describe("Temperature in Celsius"),
+      precipitation: zod.number().describe("Precipitation in mm"),
+      windspeed: zod.number().describe("Wind speed in km\/h"),
+      weatherCode: zod.number().describe("WMO weather condition code"),
+      weatherLabel: zod.string().describe("Human-readable weather description"),
     }),
   ),
   peakHour: zod.object({
@@ -44,4 +49,87 @@ export const GetHourlyTrafficResponse = zod.object({
     airportRoad: zod.number(),
     amman: zod.number(),
   }),
+  weatherSummary: zod
+    .object({
+      maxTemp: zod.number(),
+      minTemp: zod.number(),
+      maxWind: zod.number(),
+      totalPrecipitation: zod.number(),
+      dominantCondition: zod.string(),
+    })
+    .describe("Weather summary for the day"),
+});
+
+/**
+ * Returns monthly totals and daily averages for each location from historical data
+ * @summary Get monthly aggregated traffic data
+ */
+export const GetMonthlyTrafficResponse = zod.object({
+  data: zod.array(
+    zod.object({
+      month: zod.string().describe("Month in YYYY-MM format"),
+      ammanTotal: zod.number(),
+      airportRoadTotal: zod.number(),
+      ammanDailyAvg: zod.number(),
+      airportRoadDailyAvg: zod.number().nullish(),
+      days: zod.number(),
+    }),
+  ),
+});
+
+/**
+ * Compares traffic during Ramadan vs normal periods and pre/post Gaza war periods
+ * @summary Get Ramadan and war impact analysis
+ */
+export const GetTrafficAnalysisResponse = zod.object({
+  ramadan: zod.array(
+    zod.object({
+      year: zod.number(),
+      ramadanAvg: zod.number(),
+      normalAvg: zod.number(),
+      changePercent: zod.number(),
+      ramadanDays: zod.number(),
+    }),
+  ),
+  war: zod.object({
+    warStartDate: zod.string(),
+    preWarAvgDaily: zod.number(),
+    postWarAvgDaily: zod.number(),
+    preWarDays: zod.number(),
+    postWarDays: zod.number(),
+    changePercent: zod.number(),
+    timeline: zod.array(
+      zod.object({
+        month: zod.string(),
+        avg: zod.number(),
+      }),
+    ),
+  }),
+  iran: zod.array(
+    zod.object({
+      id: zod.string(),
+      label: zod.string(),
+      date: zod.string(),
+      description: zod.string(),
+      beforeAvg: zod.number(),
+      afterAvg: zod.number(),
+      changePercent: zod.number(),
+      beforeDays: zod.number(),
+      afterDays: zod.number(),
+      dayWindow: zod.array(
+        zod.object({
+          date: zod.string(),
+          amman: zod.number(),
+          isEventDay: zod.boolean(),
+        }),
+      ),
+    }),
+  ),
+  ramadanPeriods: zod.array(
+    zod.object({
+      year: zod.number().optional(),
+      start: zod.string().optional(),
+      end: zod.string().optional(),
+    }),
+  ),
 });

@@ -13,7 +13,12 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus, HourlyTrafficResponse } from "./api.schemas";
+import type {
+  HealthStatus,
+  HourlyTrafficResponse,
+  MonthlyTrafficResponse,
+  TrafficAnalysisResponse,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
 import type { ErrorType } from "../custom-fetch";
@@ -101,8 +106,8 @@ export function useHealthCheck<
 }
 
 /**
- * Returns vehicle counts by hour for each location
- * @summary Get hourly traffic data for all locations
+ * Returns vehicle counts by hour for each location, combined with weather observations
+ * @summary Get hourly traffic data with weather for all locations
  */
 export const getGetHourlyTrafficUrl = () => {
   return `/api/traffic/hourly`;
@@ -153,7 +158,7 @@ export type GetHourlyTrafficQueryResult = NonNullable<
 export type GetHourlyTrafficQueryError = ErrorType<unknown>;
 
 /**
- * @summary Get hourly traffic data for all locations
+ * @summary Get hourly traffic data with weather for all locations
  */
 
 export function useGetHourlyTraffic<
@@ -168,6 +173,158 @@ export function useGetHourlyTraffic<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetHourlyTrafficQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns monthly totals and daily averages for each location from historical data
+ * @summary Get monthly aggregated traffic data
+ */
+export const getGetMonthlyTrafficUrl = () => {
+  return `/api/traffic/history/monthly`;
+};
+
+export const getMonthlyTraffic = async (
+  options?: RequestInit,
+): Promise<MonthlyTrafficResponse> => {
+  return customFetch<MonthlyTrafficResponse>(getGetMonthlyTrafficUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMonthlyTrafficQueryKey = () => {
+  return [`/api/traffic/history/monthly`] as const;
+};
+
+export const getGetMonthlyTrafficQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMonthlyTraffic>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMonthlyTraffic>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMonthlyTrafficQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMonthlyTraffic>>
+  > = ({ signal }) => getMonthlyTraffic({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMonthlyTraffic>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMonthlyTrafficQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMonthlyTraffic>>
+>;
+export type GetMonthlyTrafficQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get monthly aggregated traffic data
+ */
+
+export function useGetMonthlyTraffic<
+  TData = Awaited<ReturnType<typeof getMonthlyTraffic>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMonthlyTraffic>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMonthlyTrafficQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Compares traffic during Ramadan vs normal periods and pre/post Gaza war periods
+ * @summary Get Ramadan and war impact analysis
+ */
+export const getGetTrafficAnalysisUrl = () => {
+  return `/api/traffic/history/analysis`;
+};
+
+export const getTrafficAnalysis = async (
+  options?: RequestInit,
+): Promise<TrafficAnalysisResponse> => {
+  return customFetch<TrafficAnalysisResponse>(getGetTrafficAnalysisUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTrafficAnalysisQueryKey = () => {
+  return [`/api/traffic/history/analysis`] as const;
+};
+
+export const getGetTrafficAnalysisQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTrafficAnalysis>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getTrafficAnalysis>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTrafficAnalysisQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTrafficAnalysis>>
+  > = ({ signal }) => getTrafficAnalysis({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTrafficAnalysis>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTrafficAnalysisQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTrafficAnalysis>>
+>;
+export type GetTrafficAnalysisQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get Ramadan and war impact analysis
+ */
+
+export function useGetTrafficAnalysis<
+  TData = Awaited<ReturnType<typeof getTrafficAnalysis>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getTrafficAnalysis>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTrafficAnalysisQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

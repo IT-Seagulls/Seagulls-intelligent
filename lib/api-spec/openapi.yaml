@@ -30,15 +30,41 @@ paths:
     get:
       operationId: getHourlyTraffic
       tags: [traffic]
-      summary: Get hourly traffic data for all locations
-      description: Returns vehicle counts by hour for each location
+      summary: Get hourly traffic data with weather for all locations
+      description: Returns vehicle counts by hour for each location, combined with weather observations
       responses:
         "200":
-          description: Hourly traffic data
+          description: Hourly traffic and weather data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/HourlyTrafficResponse"
+  /traffic/history/monthly:
+    get:
+      operationId: getMonthlyTraffic
+      tags: [traffic]
+      summary: Get monthly aggregated traffic data
+      description: Returns monthly totals and daily averages for each location from historical data
+      responses:
+        "200":
+          description: Monthly traffic data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthlyTrafficResponse"
+  /traffic/history/analysis:
+    get:
+      operationId: getTrafficAnalysis
+      tags: [traffic]
+      summary: Get Ramadan and war impact analysis
+      description: Compares traffic during Ramadan vs normal periods and pre/post Gaza war periods
+      responses:
+        "200":
+          description: Traffic analysis data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrafficAnalysisResponse"
 components:
   schemas:
     HealthStatus:
@@ -63,11 +89,31 @@ components:
         amman:
           type: number
           description: Vehicle count for Amman
+        temperature:
+          type: number
+          description: Temperature in Celsius
+        precipitation:
+          type: number
+          description: Precipitation in mm
+        windspeed:
+          type: number
+          description: Wind speed in km/h
+        weatherCode:
+          type: integer
+          description: WMO weather condition code
+        weatherLabel:
+          type: string
+          description: Human-readable weather description
       required:
         - hour
         - hourIndex
         - airportRoad
         - amman
+        - temperature
+        - precipitation
+        - windspeed
+        - weatherCode
+        - weatherLabel
     HourlyTrafficResponse:
       type: object
       properties:
@@ -106,8 +152,193 @@ components:
           required:
             - airportRoad
             - amman
+        weatherSummary:
+          type: object
+          description: Weather summary for the day
+          properties:
+            maxTemp:
+              type: number
+            minTemp:
+              type: number
+            maxWind:
+              type: number
+            totalPrecipitation:
+              type: number
+            dominantCondition:
+              type: string
+          required:
+            - maxTemp
+            - minTemp
+            - maxWind
+            - totalPrecipitation
+            - dominantCondition
       required:
         - data
         - peakHour
         - eveningDropHour
         - totalVehicles
+        - weatherSummary
+    MonthlyTrafficEntry:
+      type: object
+      properties:
+        month:
+          type: string
+          description: Month in YYYY-MM format
+        ammanTotal:
+          type: number
+        airportRoadTotal:
+          type: number
+        ammanDailyAvg:
+          type: number
+        airportRoadDailyAvg:
+          type: number
+          nullable: true
+        days:
+          type: integer
+      required:
+        - month
+        - ammanTotal
+        - airportRoadTotal
+        - ammanDailyAvg
+        - days
+    MonthlyTrafficResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthlyTrafficEntry"
+      required:
+        - data
+    RamadanYearStat:
+      type: object
+      properties:
+        year:
+          type: integer
+        ramadanAvg:
+          type: number
+        normalAvg:
+          type: number
+        changePercent:
+          type: number
+        ramadanDays:
+          type: integer
+      required:
+        - year
+        - ramadanAvg
+        - normalAvg
+        - changePercent
+        - ramadanDays
+    WarTimelineEntry:
+      type: object
+      properties:
+        month:
+          type: string
+        avg:
+          type: number
+      required:
+        - month
+        - avg
+    IranDayEntry:
+      type: object
+      properties:
+        date:
+          type: string
+        amman:
+          type: number
+        isEventDay:
+          type: boolean
+      required:
+        - date
+        - amman
+        - isEventDay
+    IranEventAnalysis:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        date:
+          type: string
+        description:
+          type: string
+        beforeAvg:
+          type: number
+        afterAvg:
+          type: number
+        changePercent:
+          type: number
+        beforeDays:
+          type: integer
+        afterDays:
+          type: integer
+        dayWindow:
+          type: array
+          items:
+            $ref: "#/components/schemas/IranDayEntry"
+      required:
+        - id
+        - label
+        - date
+        - description
+        - beforeAvg
+        - afterAvg
+        - changePercent
+        - beforeDays
+        - afterDays
+        - dayWindow
+    TrafficAnalysisResponse:
+      type: object
+      properties:
+        ramadan:
+          type: array
+          items:
+            $ref: "#/components/schemas/RamadanYearStat"
+        war:
+          type: object
+          properties:
+            warStartDate:
+              type: string
+            preWarAvgDaily:
+              type: number
+            postWarAvgDaily:
+              type: number
+            preWarDays:
+              type: integer
+            postWarDays:
+              type: integer
+            changePercent:
+              type: number
+            timeline:
+              type: array
+              items:
+                $ref: "#/components/schemas/WarTimelineEntry"
+          required:
+            - warStartDate
+            - preWarAvgDaily
+            - postWarAvgDaily
+            - preWarDays
+            - postWarDays
+            - changePercent
+            - timeline
+        iran:
+          type: array
+          items:
+            $ref: "#/components/schemas/IranEventAnalysis"
+        ramadanPeriods:
+          type: array
+          items:
+            type: object
+            properties:
+              year:
+                type: integer
+              start:
+                type: string
+              end:
+                type: string
+      required:
+        - ramadan
+        - war
+        - iran
+        - ramadanPeriods

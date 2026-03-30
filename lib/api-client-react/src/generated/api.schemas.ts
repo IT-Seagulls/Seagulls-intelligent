@@ -18,6 +18,16 @@ export interface HourlyTrafficEntry {
   airportRoad: number;
   /** Vehicle count for Amman */
   amman: number;
+  /** Temperature in Celsius */
+  temperature: number;
+  /** Precipitation in mm */
+  precipitation: number;
+  /** Wind speed in km/h */
+  windspeed: number;
+  /** WMO weather condition code */
+  weatherCode: number;
+  /** Human-readable weather description */
+  weatherLabel: string;
 }
 
 export type HourlyTrafficResponsePeakHour = {
@@ -38,10 +48,92 @@ export type HourlyTrafficResponseTotalVehicles = {
   amman: number;
 };
 
+/**
+ * Weather summary for the day
+ */
+export type HourlyTrafficResponseWeatherSummary = {
+  maxTemp: number;
+  minTemp: number;
+  maxWind: number;
+  totalPrecipitation: number;
+  dominantCondition: string;
+};
+
 export interface HourlyTrafficResponse {
   data: HourlyTrafficEntry[];
   peakHour: HourlyTrafficResponsePeakHour;
   /** The hour when traffic drops significantly in the evening (after 5pm) */
   eveningDropHour: HourlyTrafficResponseEveningDropHour;
   totalVehicles: HourlyTrafficResponseTotalVehicles;
+  /** Weather summary for the day */
+  weatherSummary: HourlyTrafficResponseWeatherSummary;
+}
+
+export interface MonthlyTrafficEntry {
+  /** Month in YYYY-MM format */
+  month: string;
+  ammanTotal: number;
+  airportRoadTotal: number;
+  ammanDailyAvg: number;
+  airportRoadDailyAvg?: number | null;
+  days: number;
+}
+
+export interface MonthlyTrafficResponse {
+  data: MonthlyTrafficEntry[];
+}
+
+export interface RamadanYearStat {
+  year: number;
+  ramadanAvg: number;
+  normalAvg: number;
+  changePercent: number;
+  ramadanDays: number;
+}
+
+export interface WarTimelineEntry {
+  month: string;
+  avg: number;
+}
+
+export interface IranDayEntry {
+  date: string;
+  amman: number;
+  isEventDay: boolean;
+}
+
+export interface IranEventAnalysis {
+  id: string;
+  label: string;
+  date: string;
+  description: string;
+  beforeAvg: number;
+  afterAvg: number;
+  changePercent: number;
+  beforeDays: number;
+  afterDays: number;
+  dayWindow: IranDayEntry[];
+}
+
+export type TrafficAnalysisResponseWar = {
+  warStartDate: string;
+  preWarAvgDaily: number;
+  postWarAvgDaily: number;
+  preWarDays: number;
+  postWarDays: number;
+  changePercent: number;
+  timeline: WarTimelineEntry[];
+};
+
+export type TrafficAnalysisResponseRamadanPeriodsItem = {
+  year?: number;
+  start?: string;
+  end?: string;
+};
+
+export interface TrafficAnalysisResponse {
+  ramadan: RamadanYearStat[];
+  war: TrafficAnalysisResponseWar;
+  iran: IranEventAnalysis[];
+  ramadanPeriods: TrafficAnalysisResponseRamadanPeriodsItem[];
 }
