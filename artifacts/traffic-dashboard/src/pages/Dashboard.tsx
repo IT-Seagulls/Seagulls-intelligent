@@ -6,10 +6,12 @@ import {
   useGetTrafficAnalysis,
   useGetDeviceHealth,
   useGetDeviceMovers,
+  useGetWeatherCorrelation,
 } from "@workspace/api-client-react";
 import { CSVLink } from "react-csv";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
+  ComposedChart,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,6 +87,7 @@ export default function Dashboard() {
   const { data: healthResponse, isLoading: healthLoading } = useGetDeviceHealth({
     query: { refetchInterval: 5 * 60 * 1000 },
   });
+  const { data: weatherData, isLoading: weatherLoading } = useGetWeatherCorrelation();
   const { data: moversResponse, isLoading: moversLoading } = useGetDeviceMovers({
     query: { staleTime: 30 * 60 * 1000 },
   });
@@ -650,6 +653,224 @@ export default function Dashboard() {
 
             </div>
 
+            {/* ── Weather Correlation ── */}
+            <div className="mt-8">
+              <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
+                <span>🌦️</span> Weather Impact on Traffic
+              </h2>
+
+              {weatherLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Skeleton className="h-[280px] rounded-xl" />
+                  <Skeleton className="h-[280px] rounded-xl" />
+                  <Skeleton className="h-[280px] rounded-xl" />
+                  <Skeleton className="h-[280px] rounded-xl" />
+                  <Skeleton className="h-[320px] rounded-xl md:col-span-2" />
+                </div>
+              ) : weatherData ? (
+                <>
+                  {/* Row 1 — by condition + by temp */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+                    {/* By condition */}
+                    <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Traffic by Weather Condition</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">Avg daily count per condition · Amman network · {weatherData.totalDays} days</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3 mt-2">
+                          {weatherData.byCondition.map((b) => {
+                            const maxT = Math.max(...weatherData.byCondition.map((x) => x.avgTraffic));
+                            const pct  = Math.round((b.avgTraffic / maxT) * 100);
+                            const isUp  = (b.pctVsClear ?? 0) >= 0;
+                            return (
+                              <div key={b.label}>
+                                <div className="flex items-center justify-between text-sm mb-1">
+                                  <span>{b.emoji} {b.label} <span className="text-muted-foreground text-xs">({b.days}d)</span></span>
+                                  <span className="font-semibold tabular-nums">{formatCompact(b.avgTraffic)}
+                                    {b.label !== "Clear" && (
+                                      <span className={`ml-2 text-xs font-normal ${isUp ? "text-green-500" : "text-red-500"}`}>
+                                        {isUp ? "+" : ""}{b.pctVsClear}%
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="h-2 rounded-full" style={{ background: isDark ? "rgba(255,255,255,0.08)" : "#f0f0f0" }}>
+                                  <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: CHART_COLORS.blue }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* By temperature */}
+                    <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Traffic by Temperature Band</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">Avg daily count by max daily temperature</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3 mt-2">
+                          {weatherData.byTemp.map((b) => {
+                            const maxT = Math.max(...weatherData.byTemp.map((x) => x.avgTraffic));
+                            const pct  = Math.round((b.avgTraffic / maxT) * 100);
+                            const TEMP_COLORS = ["#60a5fa", "#34d399", "#fbbf24", "#f87171"];
+                            const colorIdx = weatherData.byTemp.indexOf(b);
+                            return (
+                              <div key={b.label}>
+                                <div className="flex items-center justify-between text-sm mb-1">
+                                  <span>{b.label} <span className="text-muted-foreground text-xs">({b.days}d)</span></span>
+                                  <span className="font-semibold tabular-nums">{formatCompact(b.avgTraffic)}</span>
+                                </div>
+                                <div className="h-2 rounded-full" style={{ background: isDark ? "rgba(255,255,255,0.08)" : "#f0f0f0" }}>
+                                  <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: TEMP_COLORS[colorIdx] ?? CHART_COLORS.amber }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                  </div>
+
+                  {/* Row 2 — by precipitation + key findings */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+                    {/* By precipitation */}
+                    <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Traffic by Rainfall</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">Avg daily count by precipitation level</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3 mt-2">
+                          {weatherData.byPrecip.map((b) => {
+                            const maxT = Math.max(...weatherData.byPrecip.map((x) => x.avgTraffic));
+                            const pct  = maxT > 0 ? Math.round((b.avgTraffic / maxT) * 100) : 0;
+                            const PRECIP_COLORS = ["#60a5fa", "#818cf8", "#a78bfa"];
+                            const idx = weatherData.byPrecip.indexOf(b);
+                            const noRain = weatherData.byPrecip.find((x) => x.label.startsWith("No Rain"));
+                            const vsNoRain = noRain && noRain.avgTraffic > 0 && b.label !== noRain.label
+                              ? Math.round(((b.avgTraffic - noRain.avgTraffic) / noRain.avgTraffic) * 100)
+                              : null;
+                            return (
+                              <div key={b.label}>
+                                <div className="flex items-center justify-between text-sm mb-1">
+                                  <span>{b.label} <span className="text-muted-foreground text-xs">({b.days}d)</span></span>
+                                  <span className="font-semibold tabular-nums">{b.avgTraffic > 0 ? formatCompact(b.avgTraffic) : "—"}
+                                    {vsNoRain !== null && (
+                                      <span className={`ml-2 text-xs font-normal ${vsNoRain >= 0 ? "text-green-500" : "text-red-500"}`}>
+                                        {vsNoRain >= 0 ? "+" : ""}{vsNoRain}%
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="h-2 rounded-full" style={{ background: isDark ? "rgba(255,255,255,0.08)" : "#f0f0f0" }}>
+                                  <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: PRECIP_COLORS[idx] ?? CHART_COLORS.blue }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Key findings */}
+                    <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Key Findings</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">Statistical relationship between weather and traffic</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4 mt-2">
+                          {/* Pearson temp */}
+                          <div className="p-3 rounded-lg" style={{ background: isDark ? "rgba(255,255,255,0.05)" : "#f8f9fa" }}>
+                            <div className="text-xs text-muted-foreground mb-1">Temperature Correlation (Pearson r)</div>
+                            <div className="text-2xl font-bold tabular-nums" style={{ color: weatherData.pearsonTemp < 0 ? CHART_COLORS.red : CHART_COLORS.green }}>
+                              {weatherData.pearsonTemp > 0 ? "+" : ""}{weatherData.pearsonTemp}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {Math.abs(weatherData.pearsonTemp) < 0.2 ? "Weak correlation" :
+                               Math.abs(weatherData.pearsonTemp) < 0.5 ? "Moderate correlation" : "Strong correlation"}
+                              {weatherData.pearsonTemp < 0 ? " — traffic drops on hotter days" : " — traffic rises with temperature"}
+                            </div>
+                          </div>
+                          {/* Pearson precip */}
+                          <div className="p-3 rounded-lg" style={{ background: isDark ? "rgba(255,255,255,0.05)" : "#f8f9fa" }}>
+                            <div className="text-xs text-muted-foreground mb-1">Rainfall Correlation (Pearson r)</div>
+                            <div className="text-2xl font-bold tabular-nums" style={{ color: weatherData.pearsonPrecip < 0 ? CHART_COLORS.red : CHART_COLORS.green }}>
+                              {weatherData.pearsonPrecip > 0 ? "+" : ""}{weatherData.pearsonPrecip}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {Math.abs(weatherData.pearsonPrecip) < 0.2 ? "Weak correlation" :
+                               Math.abs(weatherData.pearsonPrecip) < 0.5 ? "Moderate correlation" : "Strong correlation"}
+                              {weatherData.pearsonPrecip < 0 ? " — traffic drops on rainy days" : " — rain days show more traffic"}
+                            </div>
+                          </div>
+                          <div className="flex gap-3 text-sm">
+                            <div className="flex-1 text-center p-2 rounded-lg" style={{ background: isDark ? "rgba(255,255,255,0.05)" : "#f8f9fa" }}>
+                              <div className="text-lg font-bold tabular-nums">{weatherData.rainyDays}</div>
+                              <div className="text-xs text-muted-foreground">Rainy days analysed</div>
+                            </div>
+                            <div className="flex-1 text-center p-2 rounded-lg" style={{ background: isDark ? "rgba(255,255,255,0.05)" : "#f8f9fa" }}>
+                              <div className="text-lg font-bold tabular-nums">{weatherData.totalDays}</div>
+                              <div className="text-xs text-muted-foreground">Total days</div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                  </div>
+
+                  {/* Row 3 — Monthly temp + traffic dual-axis */}
+                  <Card style={{ background: isDark ? "#1a1b1e" : "#fff", border: isDark ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Monthly Traffic vs Temperature Trend</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">Avg daily traffic (bars) vs avg daily max temperature (line) · 2022–2026</p>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <ComposedChart data={weatherData.monthly} margin={{ top: 8, right: 24, left: 0, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.06)" : "#e5e7eb"} />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} interval={2}
+                            stroke={isDark ? "rgba(255,255,255,0.3)" : "#9ca3af"} />
+                          <YAxis yAxisId="traffic" orientation="left"
+                            tickFormatter={(v) => formatCompact(v)}
+                            tick={{ fontSize: 11 }} stroke={isDark ? "rgba(255,255,255,0.3)" : "#9ca3af"} />
+                          <YAxis yAxisId="temp" orientation="right"
+                            tickFormatter={(v) => `${v}°`}
+                            tick={{ fontSize: 11 }} stroke="#f87171"
+                            domain={[0, 50]} />
+                          <Tooltip
+                            formatter={(value: number, name: string) =>
+                              name === "Avg Daily Traffic"
+                                ? [formatNumber(value), name]
+                                : [`${value}°C`, name]
+                            }
+                            contentStyle={{ background: isDark ? "#1a1b1e" : "#fff", border: "1px solid #e0e0e0", fontSize: 12 }}
+                          />
+                          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+                          <Bar yAxisId="traffic" dataKey="avgTraffic" name="Avg Daily Traffic"
+                            fill={CHART_COLORS.blue} fillOpacity={0.75} isAnimationActive={false} radius={[2,2,0,0]} />
+                          <Line yAxisId="temp" type="monotone" dataKey="avgTempMax" name="Max Temp (°C)"
+                            stroke="#f87171" strokeWidth={2} dot={false} isAnimationActive={false} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                </>
+              ) : (
+                <div className="w-full h-24 flex items-center justify-center text-muted-foreground text-sm">
+                  Weather data unavailable
+                </div>
+              )}
+            </div>
 
           </TabsContent>
         </Tabs>

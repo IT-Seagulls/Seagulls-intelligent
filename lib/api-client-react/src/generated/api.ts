@@ -20,6 +20,7 @@ import type {
   HourlyTrafficResponse,
   MonthlyTrafficResponse,
   TrafficAnalysisResponse,
+  WeatherCorrelationResponse,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -445,6 +446,63 @@ export function useGetDeviceMovers<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetDeviceMoversQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns traffic correlated with historical weather data from Open-Meteo
+ * @summary Get weather correlation analysis
+ */
+export const getGetWeatherCorrelationUrl = () => {
+  return `/api/traffic/history/weather-correlation`;
+};
+
+export const getWeatherCorrelation = async (
+  options?: RequestInit,
+): Promise<WeatherCorrelationResponse> => {
+  return customFetch<WeatherCorrelationResponse>(getGetWeatherCorrelationUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetWeatherCorrelationQueryKey = () => {
+  return [`/api/traffic/history/weather-correlation`] as const;
+};
+
+export const getGetWeatherCorrelationQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWeatherCorrelation>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getWeatherCorrelation>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetWeatherCorrelationQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWeatherCorrelation>>> = ({
+    signal,
+  }) => getWeatherCorrelation({ signal, ...requestOptions });
+  return { queryKey, queryFn, staleTime: 6 * 60 * 60 * 1000, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWeatherCorrelation>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetWeatherCorrelationQueryResult = NonNullable<Awaited<ReturnType<typeof getWeatherCorrelation>>>;
+export type GetWeatherCorrelationQueryError = ErrorType<unknown>;
+
+export function useGetWeatherCorrelation<
+  TData = Awaited<ReturnType<typeof getWeatherCorrelation>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getWeatherCorrelation>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWeatherCorrelationQueryOptions(options);
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
   };

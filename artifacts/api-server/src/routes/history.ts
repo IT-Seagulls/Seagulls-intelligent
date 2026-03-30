@@ -97,6 +97,154 @@ function isRamadan(date: string): { isRamadan: boolean; year: number } {
   return { isRamadan: false, year: parseInt(date.slice(0, 4)) };
 }
 
+// ── Weather correlation cache ──
+interface WeatherDay { tempMax: number; tempMin: number; precip: number; code: number; }
+let weatherCorrelCache: { data: Map<string, WeatherDay>; fetchedAt: number } | null = null;
+const WEATHER_TTL = 6 * 60 * 60 * 1000;
+
+function weatherGroup(code: number): { label: string; emoji: string } {
+  if (code === 0)                           return { label: "Clear",        emoji: "☀️"  };
+  if (code <= 2)                            return { label: "Partly Cloudy",emoji: "🌤️" };
+  if (code === 3)                           return { label: "Overcast",     emoji: "☁️"  };
+  if (code <= 48)                           return { label: "Fog",          emoji: "🌫️" };
+  if (code <= 67 || (code >= 80 && code <= 82)) return { label: "Rain",    emoji: "🌧️" };
+  if (code <= 77 || (code >= 85 && code <= 86)) return { label: "Snow",    emoji: "❄️"  };
+  return                                           { label: "Thunder",      emoji: "⛈️"  };
+}
+
+function pearson(xs: number[], ys: number[]): number {
+  const n = xs.length;
+  if (n < 2) return 0;
+  const mx = xs.reduce((a, b) => a + b, 0) / n;
+  const my = ys.reduce((a, b) => a + b, 0) / n;
+  const num = xs.reduce((s, x, i) => s + (x - mx) * (ys[i] - my), 0);
+  const den = Math.sqrt(
+    xs.reduce((s, x) => s + (x - mx) ** 2, 0) *
+    ys.reduce((s, y) => s + (y - my) ** 2, 0)
+  );
+  return den === 0 ? 0 : Math.round((num / den) * 100) / 100;
+}
+
+router.get("/history/weather-correlation", async (_req, res) => {
+  loadHistoricalData();
+  const now = Date.now();
+
+  if (!weatherCorrelCache || now - weatherCorrelCache.fetchedAt > WEATHER_TTL) {
+    const endDate = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Amman" });
+    const url =
+      `https://archive-api.open-meteo.com/v1/archive` +
+      `?latitude=31.9539&longitude=35.9106` +
+      `&start_date=2022-02-01&end_date=${endDate}` +
+      `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode` +
+      `&timezone=Asia/Amman`;
+    const r = await fetch(url);
+    const j = (await r.json()) as {
+      daily: { time: string[]; temperature_2m_max: number[]; temperature_2m_min: number[]; precipitation_sum: number[]; weathercode: number[] };
+    };
+    const map = new Map<string, WeatherDay>();
+    j.daily.time.forEach((t, i) =>
+      map.set(t, {
+        tempMax:  j.daily.temperature_2m_max[i]  ?? 0,
+        tempMin:  j.daily.temperature_2m_min[i]  ?? 0,
+        precip:   j.daily.precipitation_sum[i]   ?? 0,
+        code:     j.daily.weathercode[i]          ?? 0,
+      })
+    );
+    weatherCorrelCache = { data: map, fetchedAt: now };
+  }
+
+  const wmap = weatherCorrelCache.data;
+  const merged = cache.daily
+    .filter((d) => d.amman > 0 && wmap.has(d.date))
+    .map((d) => ({ ...d, ...(wmap.get(d.date)!) }));
+
+  // ── By condition ──
+  const condMap = new Map<string, { emoji: string; total: number; count: number }>();
+  for (const d of merged) {
+    const g = weatherGroup(d.code);
+    const e = condMap.get(g.label) ?? { emoji: g.emoji, total: 0, count: 0 };
+    e.total += d.amman; e.count++;
+    condMap.set(g.label, e);
+  }
+  const clearAvg = (condMap.get("Clear")?.total ?? 0) / Math.max(condMap.get("Clear")?.count ?? 1, 1);
+  const byCondition = [...condMap.entries()]
+    .filter(([, v]) => v.count >= 3)
+    .map(([label, v]) => ({
+      label, emoji: v.emoji,
+      avgTraffic: Math.round(v.total / v.count),
+      days: v.count,
+      pctVsClear: clearAvg > 0 ? Math.round(((v.total / v.count - clearAvg) / clearAvg) * 100) : 0,
+    }))
+    .sort((a, b) => b.avgTraffic - a.avgTraffic);
+
+  // ── By temperature bucket ──
+  const TEMP_BUCKETS = [
+    { label: "Cold (<15°C)",   min: -99, max: 15,   order: 0 },
+    { label: "Mild (15–25°C)", min: 15,  max: 25,   order: 1 },
+    { label: "Warm (25–35°C)", min: 25,  max: 35,   order: 2 },
+    { label: "Hot (>35°C)",    min: 35,  max: 99,   order: 3 },
+  ];
+  const tempMap = new Map<string, { total: number; count: number; order: number }>();
+  for (const b of TEMP_BUCKETS) tempMap.set(b.label, { total: 0, count: 0, order: b.order });
+  for (const d of merged) {
+    const b = TEMP_BUCKETS.find((b) => d.tempMax >= b.min && d.tempMax < b.max);
+    if (b) { const e = tempMap.get(b.label)!; e.total += d.amman; e.count++; }
+  }
+  const byTemp = [...tempMap.entries()]
+    .filter(([, v]) => v.count > 0)
+    .map(([label, v]) => ({ label, avgTraffic: Math.round(v.total / v.count), days: v.count, order: v.order }))
+    .sort((a, b) => a.order - b.order);
+
+  // ── By precipitation ──
+  const PRECIP_BUCKETS = [
+    { label: "No Rain (0mm)", min: 0, max: 0.1 },
+    { label: "Drizzle (0.1–5mm)", min: 0.1, max: 5 },
+    { label: "Rain (>5mm)", min: 5, max: 999 },
+  ];
+  const precipMap = new Map<string, { total: number; count: number }>();
+  for (const b of PRECIP_BUCKETS) precipMap.set(b.label, { total: 0, count: 0 });
+  for (const d of merged) {
+    const b = PRECIP_BUCKETS.find((b) => d.precip >= b.min && d.precip < b.max);
+    if (b) { const e = precipMap.get(b.label)!; e.total += d.amman; e.count++; }
+  }
+  const byPrecip = PRECIP_BUCKETS.map((b) => {
+    const v = precipMap.get(b.label)!;
+    return { label: b.label, avgTraffic: v.count > 0 ? Math.round(v.total / v.count) : 0, days: v.count };
+  });
+
+  // ── Monthly temp + traffic ──
+  const monthlyMap = new Map<string, { traffic: number; tempMax: number; precip: number; count: number }>();
+  for (const d of merged) {
+    const m = d.date.slice(0, 7);
+    const e = monthlyMap.get(m) ?? { traffic: 0, tempMax: 0, precip: 0, count: 0 };
+    e.traffic += d.amman; e.tempMax += d.tempMax; e.precip += d.precip; e.count++;
+    monthlyMap.set(m, e);
+  }
+  const monthly = [...monthlyMap.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, v]) => ({
+      month,
+      label: (() => { const [yr, mo] = month.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+mo-1]} '${yr.slice(2)}`; })(),
+      avgTraffic: Math.round(v.traffic / v.count),
+      avgTempMax: Math.round((v.tempMax / v.count) * 10) / 10,
+      avgPrecipDays: Math.round((v.precip / v.count) * 10) / 10,
+    }));
+
+  const pearsonTemp   = pearson(merged.map((d) => d.tempMax),  merged.map((d) => d.amman));
+  const pearsonPrecip = pearson(merged.map((d) => d.precip),   merged.map((d) => d.amman));
+
+  res.json({
+    byCondition,
+    byTemp,
+    byPrecip,
+    monthly,
+    pearsonTemp,
+    pearsonPrecip,
+    totalDays: merged.length,
+    rainyDays: merged.filter((d) => d.precip >= 0.1).length,
+  });
+});
+
 router.get("/history/daily", (_req, res) => {
   loadHistoricalData();
   res.json({

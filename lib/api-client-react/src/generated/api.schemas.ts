@@ -145,6 +145,34 @@ export interface DeviceHealthResponse {
   checkedAt: string;
 }
 
+export interface WeatherBucket {
+  label: string;
+  emoji?: string;
+  avgTraffic: number;
+  days: number;
+  pctVsClear?: number;
+  order?: number;
+}
+
+export interface WeatherMonthlyPoint {
+  month: string;
+  label: string;
+  avgTraffic: number;
+  avgTempMax: number;
+  avgPrecipDays: number;
+}
+
+export interface WeatherCorrelationResponse {
+  byCondition: WeatherBucket[];
+  byTemp: WeatherBucket[];
+  byPrecip: WeatherBucket[];
+  monthly: WeatherMonthlyPoint[];
+  pearsonTemp: number;
+  pearsonPrecip: number;
+  totalDays: number;
+  rainyDays: number;
+}
+
 export interface DeviceMover {
   name: string;
   today: number;
