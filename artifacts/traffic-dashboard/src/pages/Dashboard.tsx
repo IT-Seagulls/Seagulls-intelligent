@@ -5,6 +5,7 @@ import {
   useGetMonthlyTraffic,
   useGetTrafficAnalysis,
   useGetDeviceHealth,
+  useGetDeviceMovers,
 } from "@workspace/api-client-react";
 import { CSVLink } from "react-csv";
 import {
@@ -83,6 +84,9 @@ export default function Dashboard() {
   const { data: analysisResponse, isLoading: analysisLoading } = useGetTrafficAnalysis();
   const { data: healthResponse, isLoading: healthLoading } = useGetDeviceHealth({
     query: { refetchInterval: 5 * 60 * 1000 },
+  });
+  const { data: moversResponse, isLoading: moversLoading } = useGetDeviceMovers({
+    query: { staleTime: 30 * 60 * 1000 },
   });
 
   const loading = hourlyLoading || hourlyFetching;
@@ -410,6 +414,88 @@ export default function Dashboard() {
                 )}
               </CardContent>
             </Card>
+
+            {/* ── Top Movers Card ── */}
+            <div className="mt-5">
+              <Card>
+                <CardHeader className="px-4 pt-4 pb-2">
+                  <CardTitle className="text-base">📊 Screen Performance vs Last Week</CardTitle>
+                  {moversResponse && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Today ({moversResponse.today}) vs same day last week ({moversResponse.lastWeek}) · per screen total
+                    </p>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  {moversLoading ? (
+                    <Skeleton className="w-full h-[200px]" />
+                  ) : moversResponse ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Top 5 Growth */}
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <TrendingUp className="w-4 h-4" style={{ color: CHART_COLORS.green }} />
+                          <span className="text-sm font-semibold" style={{ color: CHART_COLORS.green }}>Top 5 Growth</span>
+                        </div>
+                        <div className="space-y-2">
+                          {moversResponse.topGrowth.map((d) => (
+                            <div key={d.name} className="flex items-center gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-medium truncate">{d.name}</div>
+                                <div className="h-1.5 rounded-full mt-1 overflow-hidden" style={{ background: isDark ? "rgba(255,255,255,0.08)" : "#f0f0f0" }}>
+                                  <div className="h-full rounded-full" style={{
+                                    width: `${Math.min(100, Math.abs(d.pct) / 2)}%`,
+                                    background: CHART_COLORS.green,
+                                  }} />
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0 w-14">
+                                <span className="text-xs font-bold" style={{ color: CHART_COLORS.green }}>
+                                  +{d.pct}%
+                                </span>
+                                <div className="text-[10px] text-muted-foreground">{d.today.toLocaleString()}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Bottom 5 Drop */}
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <TrendingDown className="w-4 h-4" style={{ color: CHART_COLORS.red }} />
+                          <span className="text-sm font-semibold" style={{ color: CHART_COLORS.red }}>Bottom 5 Drop</span>
+                        </div>
+                        <div className="space-y-2">
+                          {moversResponse.topDrop.map((d) => (
+                            <div key={d.name} className="flex items-center gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-medium truncate">{d.name}</div>
+                                <div className="h-1.5 rounded-full mt-1 overflow-hidden" style={{ background: isDark ? "rgba(255,255,255,0.08)" : "#f0f0f0" }}>
+                                  <div className="h-full rounded-full" style={{
+                                    width: `${Math.min(100, Math.abs(d.pct) / 2)}%`,
+                                    background: CHART_COLORS.red,
+                                  }} />
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0 w-14">
+                                <span className="text-xs font-bold" style={{ color: CHART_COLORS.red }}>
+                                  {d.pct}%
+                                </span>
+                                <div className="text-[10px] text-muted-foreground">{d.today.toLocaleString()}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm">
+                      Data unavailable
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
           </TabsContent>
 

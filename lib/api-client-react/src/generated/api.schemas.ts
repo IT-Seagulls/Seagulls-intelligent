@@ -145,6 +145,20 @@ export interface DeviceHealthResponse {
   checkedAt: string;
 }
 
+export interface DeviceMover {
+  name: string;
+  today: number;
+  lastWeek: number;
+  pct: number;
+}
+
+export interface DeviceMoversResponse {
+  today: string;
+  lastWeek: string;
+  topGrowth: DeviceMover[];
+  topDrop: DeviceMover[];
+}
+
 export interface TrafficAnalysisResponse {
   ramadan: RamadanYearStat[];
   war: TrafficAnalysisResponseWar;

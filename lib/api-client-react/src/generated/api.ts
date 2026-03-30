@@ -15,6 +15,7 @@ import type {
 
 import type {
   DeviceHealthResponse,
+  DeviceMoversResponse,
   HealthStatus,
   HourlyTrafficResponse,
   MonthlyTrafficResponse,
@@ -395,6 +396,55 @@ export function useGetDeviceHealth<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetDeviceHealthQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetDeviceMoversUrl = () => `/api/traffic/device-movers`;
+
+export const getDeviceMovers = async (
+  options?: RequestInit,
+): Promise<DeviceMoversResponse> =>
+  customFetch<DeviceMoversResponse>(getGetDeviceMoversUrl(), {
+    ...options,
+    method: "GET",
+  });
+
+export const getGetDeviceMoversQueryKey = () =>
+  [`/api/traffic/device-movers`] as const;
+
+export const getGetDeviceMoversQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDeviceMovers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getDeviceMovers>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetDeviceMoversQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceMovers>>> = ({
+    signal,
+  }) => getDeviceMovers({ signal, ...requestOptions });
+  return { queryKey, queryFn, staleTime: 30 * 60 * 1000, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDeviceMovers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDeviceMoversQueryResult = NonNullable<Awaited<ReturnType<typeof getDeviceMovers>>>;
+export type GetDeviceMoversQueryError = ErrorType<unknown>;
+
+export function useGetDeviceMovers<
+  TData = Awaited<ReturnType<typeof getDeviceMovers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getDeviceMovers>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDeviceMoversQueryOptions(options);
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
   };

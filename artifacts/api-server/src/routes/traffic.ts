@@ -200,6 +200,51 @@ function findEveningDropHour(data: HourlyEntry[], location: "airportRoad" | "amm
   return maxDropHour;
 }
 
+// ── Device movers cache ──
+interface DeviceTotal { name: string; total: number; }
+interface MoverCache {
+  todayDate: string;
+  lastWeekDate: string;
+  fetchedAt: number;
+  today: DeviceTotal[];
+  lastWeek: DeviceTotal[];
+}
+let moverCache: MoverCache | null = null;
+const MOVER_CACHE_TTL_MS = 30 * 60 * 1000;
+
+async function fetchDeviceDailyTotals(date: string, token: string): Promise<DeviceTotal[]> {
+  const reportResp = await fetch(`${ADMOBILIZE_BASE}/projects/${PROJECT_ID}/report`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: process.env.ADMOBILIZE_EMAIL,
+      startTime: `${date}T00:00:00Z`,
+      endTime: `${date}T23:59:59Z`,
+      timestampGranularity: "HOUR",
+      timezone: "Asia/Amman",
+      solutions: ["traffic"],
+    }),
+  });
+  const reportJson = (await reportResp.json()) as { reportUrl?: string };
+  if (!reportJson.reportUrl) throw new Error("No reportUrl");
+
+  const buf = Buffer.from(
+    await (await fetch(`${reportJson.reportUrl}?access_token=${token}`)).arrayBuffer()
+  );
+  let csv: string;
+  try { csv = gunzipSync(buf).toString("utf-8"); } catch { csv = buf.toString("utf-8"); }
+
+  const deviceMap = new Map<string, number>();
+  for (const line of csv.trim().split("\n").slice(1)) {
+    const cols = line.split(",");
+    const name = cols[2]?.trim();
+    const count = parseFloat(cols[10]) || 0;
+    if (!name) continue;
+    deviceMap.set(name, (deviceMap.get(name) ?? 0) + count);
+  }
+  return [...deviceMap.entries()].map(([name, total]) => ({ name, total: Math.round(total) }));
+}
+
 // ── Device health cache ──
 interface DeviceHealthCache {
   fetchedAt: number;
@@ -267,6 +312,59 @@ router.get("/devices/health", async (req: Request, res) => {
     res.status(502).json({ error: "Failed to fetch device health" });
   }
 });
+
+router.get("/device-movers", async (req: Request, res) => {
+  try {
+    const todayDate = todayAmman();
+    const lastWeekDate = (() => {
+      const d = new Date(todayDate);
+      d.setDate(d.getDate() - 7);
+      return d.toISOString().slice(0, 10);
+    })();
+
+    const now = Date.now();
+    if (
+      moverCache &&
+      moverCache.todayDate === todayDate &&
+      now - moverCache.fetchedAt < MOVER_CACHE_TTL_MS
+    ) {
+      return res.json(buildMoverResponse(moverCache));
+    }
+
+    const token = await getAdmobilizeToken();
+    const [today, lastWeek] = await Promise.all([
+      fetchDeviceDailyTotals(todayDate, token),
+      fetchDeviceDailyTotals(lastWeekDate, token),
+    ]);
+
+    moverCache = { todayDate, lastWeekDate, fetchedAt: now, today, lastWeek };
+    return res.json(buildMoverResponse(moverCache));
+  } catch (err) {
+    return res.status(502).json({ error: "Failed to fetch device movers" });
+  }
+});
+
+function buildMoverResponse(cache: MoverCache) {
+  const lastWeekMap = new Map(cache.lastWeek.map((d) => [d.name, d.total]));
+  const EXCLUDED = new Set(["Street counting 2", "Street Counting 4 offline", "Irbid"]);
+
+  const movers = cache.today
+    .filter((d) => !EXCLUDED.has(d.name) && lastWeekMap.has(d.name))
+    .map((d) => {
+      const lw = lastWeekMap.get(d.name)!;
+      const pct = lw > 0 ? Math.round(((d.total - lw) / lw) * 100) : 0;
+      return { name: d.name, today: d.total, lastWeek: lw, pct };
+    })
+    .filter((d) => d.lastWeek > 500); // ignore tiny devices that skew %
+
+  const sorted = [...movers].sort((a, b) => b.pct - a.pct);
+  return {
+    today: cache.todayDate,
+    lastWeek: cache.lastWeekDate,
+    topGrowth: sorted.slice(0, 5),
+    topDrop: [...sorted].reverse().slice(0, 5),
+  };
+}
 
 router.get("/hourly", async (req: Request, res) => {
   const date = (req.query.date as string) || todayAmman();
