@@ -46,12 +46,6 @@ function formatNumber(v: number): string {
   if (v == null) return "--";
   return new Intl.NumberFormat("en-US").format(v);
 }
-function formatMonth(ym: string): string {
-  const [y, m] = ym.split("-");
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${months[parseInt(m) - 1]} '${y.slice(2)}`;
-}
-
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
@@ -136,7 +130,29 @@ export default function Dashboard() {
   const gridColor    = isDark ? "rgba(255,255,255,0.08)" : "#e5e5e5";
   const tickColor    = isDark ? "#98999C" : "#71717a";
 
-  const monthlyData  = (monthlyResponse?.data || []).map((m) => ({ ...m, label: formatMonth(m.month) }));
+  const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const YEAR_COLORS: Record<string, string> = {
+    "2022": "#0079F2",
+    "2023": "#795EFF",
+    "2024": "#14b8a6",
+    "2025": "#f59e0b",
+    "2026": "#e55a5a",
+  };
+  const yearlyOverlay = (() => {
+    const byMonth: Record<string, Record<string, number>> = {};
+    MONTH_LABELS.forEach((m) => { byMonth[m] = {}; });
+    for (const row of monthlyResponse?.data || []) {
+      const [yr, mo] = row.month.split("-");
+      const label = MONTH_LABELS[parseInt(mo) - 1];
+      if (label) byMonth[label][yr] = row.ammanDailyAvg;
+    }
+    return MONTH_LABELS.map((m) => ({ month: m, ...byMonth[m] }));
+  })();
+  const years = ["2022", "2023", "2024", "2025", "2026"];
+  const yearLabels: Record<string, string> = {
+    "2022": "2022", "2023": "2023", "2024": "2024", "2025": "2025",
+    "2026": "2026 (Q1 · Ramadan Feb–Mar)",
+  };
   const ramadanData  = (analysisResponse?.ramadan || []).map((r) => ({
     year: String(r.year),
     "Ramadan Avg":    r.ramadanAvg,
@@ -397,27 +413,57 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Monthly Trend */}
+            {/* Yearly Overlay Trend */}
             <div className="mb-5">
               <Card>
                 <CardHeader className="px-4 pt-4 pb-2">
-                  <CardTitle className="text-base">📈 Monthly Traffic Trend — Amman (Daily Average)</CardTitle>
+                  <CardTitle className="text-base">📈 Year-over-Year Traffic — Amman (Daily Average)</CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Average daily vehicle detections across all Amman sensors · Feb 2022 – Mar 2026
+                    Each line = one calendar year · overlaid by month for direct comparison
                   </p>
                 </CardHeader>
                 <CardContent>
                   {monthlyLoading ? (
                     <Skeleton className="w-full h-[300px]" />
-                  ) : monthlyData.length > 0 ? (
+                  ) : yearlyOverlay.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300} debounce={0}>
-                      <LineChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <LineChart data={yearlyOverlay} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-                        <XAxis dataKey="label" tick={{ fontSize: 11, fill: tickColor }} stroke={tickColor} tickMargin={10} interval={3} />
+                        <XAxis dataKey="month" tick={{ fontSize: 12, fill: tickColor }} stroke={tickColor} tickMargin={10} />
                         <YAxis tickFormatter={formatCompact} tick={{ fontSize: 12, fill: tickColor }} stroke={tickColor} tickMargin={10} axisLine={false} tickLine={false} />
-                        <Tooltip content={<CustomTooltip />} isAnimationActive={false} />
-                        <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: 20 }} />
-                        <Line type="monotone" dataKey="ammanDailyAvg" name="Amman Daily Avg" stroke={CHART_COLORS.purple} strokeWidth={2} dot={false} isAnimationActive={false} />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (!active || !payload?.length) return null;
+                            return (
+                              <div style={{ background: "#fff", borderRadius: 6, padding: "10px 14px", border: "1px solid #e0e0e0", color: "#1a1a1a", fontSize: 13 }}>
+                                <div style={{ marginBottom: 6, fontWeight: 500 }}>{label}</div>
+                                {payload.map((e: any, i: number) => (
+                                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
+                                    <span style={{ width: 10, height: 10, borderRadius: 2, background: e.color, flexShrink: 0, display: "inline-block" }} />
+                                    <span style={{ color: "#444" }}>{e.name}</span>
+                                    <span style={{ marginLeft: "auto", fontWeight: 600 }}>{typeof e.value === "number" ? e.value.toLocaleString() : "--"}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          }}
+                          isAnimationActive={false}
+                        />
+                        <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: 16 }} />
+                        {years.map((yr) => (
+                          <Line
+                            key={yr}
+                            type="monotone"
+                            dataKey={yr}
+                            name={yearLabels[yr]}
+                            stroke={YEAR_COLORS[yr]}
+                            strokeWidth={yr === "2026" ? 2.5 : 2}
+                            strokeDasharray={yr === "2026" ? "6 3" : undefined}
+                            dot={false}
+                            connectNulls
+                            isAnimationActive={false}
+                          />
+                        ))}
                       </LineChart>
                     </ResponsiveContainer>
                   ) : (
