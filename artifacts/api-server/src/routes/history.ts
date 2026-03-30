@@ -43,6 +43,7 @@ function loadHistoricalData(): void {
     const deviceName = cols[2];
     const count = parseInt(cols[10]) || 0;
     if (!date || !deviceName) continue;
+    if (/^street\s*count/i.test(deviceName) || deviceName === "Irbid") continue;
 
     if (!dailyMap.has(date)) dailyMap.set(date, { amman: 0, airportRoad: 0 });
     const entry = dailyMap.get(date)!;

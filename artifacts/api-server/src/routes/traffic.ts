@@ -94,7 +94,7 @@ async function fetchHourlyFromApi(date: string): Promise<{ arHour: number[]; amH
     const ts = cols[0]?.trim();
     const name = cols[2]?.trim() ?? "";
     const count = parseFloat(cols[10]) || 0;
-    if (!ts) continue;
+    if (!ts || isExcluded(name)) continue;
     // Timestamps are already in Amman local time (timezone: "Asia/Amman" in request)
     const localHour = parseInt(ts.slice(11, 13));
     if (AR_RE.test(name)) arHour[localHour] += count;
@@ -255,11 +255,10 @@ interface DeviceHealthCache {
 let deviceHealthCache: DeviceHealthCache | null = null;
 const HEALTH_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-const EXCLUDED_DEVICES = new Set([
-  "Street counting 2",
-  "Street Counting 4 offline",
-  "Irbid",
-]);
+const STREET_COUNT_RE = /^street\s*count/i;
+function isExcluded(name: string): boolean {
+  return STREET_COUNT_RE.test(name) || name === "Irbid";
+}
 
 async function fetchDeviceHealth(): Promise<DeviceHealthCache> {
   const now = Date.now();
@@ -280,7 +279,7 @@ async function fetchDeviceHealth(): Promise<DeviceHealthCache> {
     }[];
   };
 
-  const devices = (j.devices ?? []).filter((d) => !EXCLUDED_DEVICES.has(d.displayName));
+  const devices = (j.devices ?? []).filter((d) => !isExcluded(d.displayName));
   const offlineDevices = devices
     .filter((d) => !d.state?.online)
     .map((d) => ({
@@ -346,10 +345,8 @@ router.get("/device-movers", async (req: Request, res) => {
 
 function buildMoverResponse(cache: MoverCache) {
   const lastWeekMap = new Map(cache.lastWeek.map((d) => [d.name, d.total]));
-  const EXCLUDED = new Set(["Street counting 2", "Street Counting 4 offline", "Irbid"]);
-
   const movers = cache.today
-    .filter((d) => !EXCLUDED.has(d.name) && lastWeekMap.has(d.name))
+    .filter((d) => !isExcluded(d.name) && lastWeekMap.has(d.name))
     .map((d) => {
       const lw = lastWeekMap.get(d.name)!;
       const pct = lw > 0 ? Math.round(((d.total - lw) / lw) * 100) : 0;
