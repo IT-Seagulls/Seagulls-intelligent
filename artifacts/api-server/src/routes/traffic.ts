@@ -210,6 +210,12 @@ interface DeviceHealthCache {
 let deviceHealthCache: DeviceHealthCache | null = null;
 const HEALTH_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
+const EXCLUDED_DEVICES = new Set([
+  "Street counting 2",
+  "Street Counting 4 offline",
+  "Irbid",
+]);
+
 async function fetchDeviceHealth(): Promise<DeviceHealthCache> {
   const now = Date.now();
   if (deviceHealthCache && now - deviceHealthCache.fetchedAt < HEALTH_CACHE_TTL_MS) {
@@ -229,7 +235,7 @@ async function fetchDeviceHealth(): Promise<DeviceHealthCache> {
     }[];
   };
 
-  const devices = j.devices ?? [];
+  const devices = (j.devices ?? []).filter((d) => !EXCLUDED_DEVICES.has(d.displayName));
   const offlineDevices = devices
     .filter((d) => !d.state?.online)
     .map((d) => ({
