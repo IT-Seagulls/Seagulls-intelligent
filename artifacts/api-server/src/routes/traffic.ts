@@ -1,7 +1,8 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request } from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { gunzipSync } from "zlib";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.resolve(__dirname, "../data");
@@ -20,23 +21,122 @@ interface HourlyEntry {
   weatherLabel: string;
 }
 
-function parseCSV(filePath: string): Map<string, number> {
-  const content = fs.readFileSync(filePath, "utf-8");
-  const lines = content.trim().split("\n").slice(1);
-  const map = new Map<string, number>();
-  for (const line of lines) {
-    const [hour, count] = line.split(",");
-    map.set(hour.trim(), Number(count.trim()));
-  }
-  return map;
-}
-
 const HOUR_ORDER = [
   "12am", "01am", "02am", "03am", "04am", "05am",
   "06am", "07am", "08am", "09am", "10am", "11am",
   "12pm", "01pm", "02pm", "03pm", "04pm", "05pm",
   "06pm", "07pm", "08pm", "09pm", "10pm", "11pm",
 ];
+
+const ADMOBILIZE_AUTH = "https://xauth.admobilize.com/api/v1/users:login";
+const ADMOBILIZE_BASE = "https://dashboard.admobilize.com/api/v1";
+const PROJECT_ID = "R32b97837fad94bcc98e319309859a833";
+const AR_RE = /AR-|^aura|^airport/i;
+
+// In-memory cache: keyed by date string (YYYY-MM-DD)
+interface HourlyCache {
+  date: string;
+  fetchedAt: number;
+  arHour: number[];
+  amHour: number[];
+}
+let hourlyCache: HourlyCache | null = null;
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+function todayAmman(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Amman" });
+}
+
+async function getAdmobilizeToken(): Promise<string> {
+  const r = await fetch(ADMOBILIZE_AUTH, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: process.env.ADMOBILIZE_EMAIL,
+      password: process.env.ADMOBILIZE_PASSWORD,
+    }),
+  });
+  const j = (await r.json()) as { accessToken?: string };
+  if (!j.accessToken) throw new Error("Auth failed");
+  return j.accessToken;
+}
+
+async function fetchHourlyFromApi(date: string): Promise<{ arHour: number[]; amHour: number[] }> {
+  const token = await getAdmobilizeToken();
+
+  const reportResp = await fetch(`${ADMOBILIZE_BASE}/projects/${PROJECT_ID}/report`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: process.env.ADMOBILIZE_EMAIL,
+      startTime: `${date}T00:00:00Z`,
+      endTime: `${date}T23:59:59Z`,
+      timestampGranularity: "HOUR",
+      timezone: "Asia/Amman",
+      solutions: ["traffic"],
+    }),
+  });
+  const reportJson = (await reportResp.json()) as { reportUrl?: string };
+  if (!reportJson.reportUrl) throw new Error("No reportUrl");
+
+  const buf = Buffer.from(
+    await (await fetch(`${reportJson.reportUrl}?access_token=${token}`)).arrayBuffer()
+  );
+  let csv: string;
+  try { csv = gunzipSync(buf).toString("utf-8"); } catch { csv = buf.toString("utf-8"); }
+
+  const arHour = new Array(24).fill(0);
+  const amHour = new Array(24).fill(0);
+
+  const lines = csv.trim().split("\n");
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",");
+    const ts = cols[0]?.trim();
+    const name = cols[2]?.trim() ?? "";
+    const count = parseFloat(cols[10]) || 0;
+    if (!ts) continue;
+    const utcHour = parseInt(ts.slice(11, 13));
+    const localHour = (utcHour + 3) % 24;
+    if (AR_RE.test(name)) arHour[localHour] += count;
+    else amHour[localHour] += count;
+  }
+
+  return { arHour, amHour };
+}
+
+function loadFallbackCSV(filename: string): number[] {
+  try {
+    const content = fs.readFileSync(path.join(dataDir, filename), "utf-8");
+    const lines = content.trim().split("\n").slice(1);
+    const map = new Map<string, number>();
+    for (const line of lines) {
+      const [hour, count] = line.split(",");
+      map.set(hour.trim(), Number(count.trim()));
+    }
+    return HOUR_ORDER.map((h) => map.get(h) ?? 0);
+  } catch {
+    return new Array(24).fill(0);
+  }
+}
+
+async function getHourlyData(date: string): Promise<{ arHour: number[]; amHour: number[] }> {
+  const now = Date.now();
+  if (hourlyCache && hourlyCache.date === date && now - hourlyCache.fetchedAt < CACHE_TTL_MS) {
+    return { arHour: hourlyCache.arHour, amHour: hourlyCache.amHour };
+  }
+
+  try {
+    const { arHour, amHour } = await fetchHourlyFromApi(date);
+    hourlyCache = { date, fetchedAt: now, arHour, amHour };
+    return { arHour, amHour };
+  } catch {
+    // Fall back to static CSVs (seeded with last known data)
+    return {
+      arHour: loadFallbackCSV("airport_road.csv"),
+      amHour: loadFallbackCSV("amman.csv"),
+    };
+  }
+}
 
 function wmoLabel(code: number): string {
   if (code === 0) return "Clear sky";
@@ -51,7 +151,7 @@ function wmoLabel(code: number): string {
   return "Unknown";
 }
 
-async function fetchWeather(): Promise<{
+async function fetchWeather(date: string): Promise<{
   temperature: number[];
   precipitation: number[];
   windspeed: number[];
@@ -59,8 +159,8 @@ async function fetchWeather(): Promise<{
 }> {
   const url =
     "https://archive-api.open-meteo.com/v1/archive" +
-    "?latitude=31.9539&longitude=35.9106" +
-    "&start_date=2026-03-30&end_date=2026-03-30" +
+    `?latitude=31.9539&longitude=35.9106` +
+    `&start_date=${date}&end_date=${date}` +
     "&hourly=temperature_2m,precipitation,windspeed_10m,weathercode" +
     "&timezone=Asia%2FAmman";
 
@@ -100,27 +200,24 @@ function findEveningDropHour(data: HourlyEntry[], location: "airportRoad" | "amm
   return maxDropHour;
 }
 
-router.get("/hourly", async (_req, res) => {
-  const airportMap = parseCSV(path.join(dataDir, "airport_road.csv"));
-  const ammanMap = parseCSV(path.join(dataDir, "amman.csv"));
+router.get("/hourly", async (req: Request, res) => {
+  const date = (req.query.date as string) || todayAmman();
 
-  let weather: Awaited<ReturnType<typeof fetchWeather>>;
-  try {
-    weather = await fetchWeather();
-  } catch {
-    weather = {
-      temperature: Array(24).fill(0),
-      precipitation: Array(24).fill(0),
-      windspeed: Array(24).fill(0),
-      weathercode: Array(24).fill(0),
-    };
-  }
+  const [{ arHour, amHour }, weather] = await Promise.all([
+    getHourlyData(date),
+    fetchWeather(date).catch(() => ({
+      temperature: Array<number>(24).fill(0),
+      precipitation: Array<number>(24).fill(0),
+      windspeed: Array<number>(24).fill(0),
+      weathercode: Array<number>(24).fill(0),
+    })),
+  ]);
 
   const data: HourlyEntry[] = HOUR_ORDER.map((hour, index) => ({
     hour,
     hourIndex: index,
-    airportRoad: airportMap.get(hour) ?? 0,
-    amman: ammanMap.get(hour) ?? 0,
+    airportRoad: Math.round(arHour[index]),
+    amman: Math.round(amHour[index]),
     temperature: weather.temperature[index] ?? 0,
     precipitation: weather.precipitation[index] ?? 0,
     windspeed: weather.windspeed[index] ?? 0,
@@ -137,7 +234,6 @@ router.get("/hourly", async (_req, res) => {
   const totalPrecip = weather.precipitation.reduce((s, v) => s + v, 0);
   const maxWind = Math.max(...weather.windspeed);
 
-  // Find dominant weather condition by most frequent code
   const codeCount = new Map<number, number>();
   for (const c of weather.weathercode) {
     codeCount.set(c, (codeCount.get(c) ?? 0) + 1);
@@ -145,6 +241,7 @@ router.get("/hourly", async (_req, res) => {
   const dominantCode = [...codeCount.entries()].sort((a, b) => b[1] - a[1])[0][0];
 
   res.json({
+    date,
     data,
     peakHour: { airportRoad: peakAirport.hour, amman: peakAmman.hour },
     eveningDropHour: {
@@ -153,8 +250,8 @@ router.get("/hourly", async (_req, res) => {
     },
     totalVehicles: { airportRoad: totalAirport, amman: totalAmman },
     weatherSummary: {
-      maxTemp: Math.max(...temps),
-      minTemp: Math.min(...temps),
+      maxTemp: temps.length ? Math.max(...temps) : 0,
+      minTemp: temps.length ? Math.min(...temps) : 0,
       maxWind: Math.round(maxWind),
       totalPrecipitation: Math.round(totalPrecip * 10) / 10,
       dominantCondition: wmoLabel(dominantCode),
