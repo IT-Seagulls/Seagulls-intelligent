@@ -437,20 +437,23 @@ router.get("/hourly", async (req: Request, res) => {
 });
 
 router.get("/devices/locations", async (req: Request, res) => {
-  const locs = getDeviceLocations();
-  // Enrich with current health if cache is warm
-  const health = deviceHealthCache;
-  const offlineSet = new Set(health?.offlineDevices.map((d) => d.name) ?? []);
-  const devices = locs.map((d) => ({
-    name: d.name,
-    address: d.address,
-    lat: d.lat,
-    lng: d.lng,
-    size: d.size,
-    network: d.network,
-    status: health ? (offlineSet.has(d.name) ? "offline" : "online") : "unknown",
-  }));
-  res.json({ devices, checkedAt: health?.checkedAt ?? null });
+  try {
+    const locs = getDeviceLocations();
+    const health = await fetchDeviceHealth();
+    const offlineSet = new Set(health.offlineDevices.map((d) => d.name));
+    const devices = locs.map((d) => ({
+      name: d.name,
+      address: d.address,
+      lat: d.lat,
+      lng: d.lng,
+      size: d.size,
+      network: d.network,
+      status: offlineSet.has(d.name) ? "offline" : "online",
+    }));
+    res.json({ devices, checkedAt: new Date(health.fetchedAt).toISOString() });
+  } catch {
+    res.status(502).json({ error: "Failed to fetch device locations" });
+  }
 });
 
 export default router;

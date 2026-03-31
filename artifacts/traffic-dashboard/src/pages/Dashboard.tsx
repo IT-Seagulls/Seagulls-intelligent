@@ -913,8 +913,7 @@ export default function Dashboard() {
               <div>
                 <h2 className="text-base font-semibold">Screen Locations — All Networks</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {locData ? `${locData.devices.length} screens · ` : ""}
-                  Click any marker for details · Scroll to zoom
+                  {locData ? `${locData.devices.length} screens · ` : ""}Click any marker for details · Scroll to zoom
                 </p>
               </div>
               {locData && (
