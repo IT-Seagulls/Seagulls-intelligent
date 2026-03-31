@@ -11,8 +11,8 @@ const router: IRouter = Router();
 
 // ── Device location data (from devices.json) ──
 interface DeviceLocation {
-  name: string; screenId: number; address: string;
-  lat: number; lng: number; pixels: string; size: string; azimuth: number;
+  name: string; address: string;
+  lat: number; lng: number; size: string; network: string;
 }
 let _deviceLocations: DeviceLocation[] | null = null;
 function getDeviceLocations(): DeviceLocation[] {
@@ -441,18 +441,13 @@ router.get("/devices/locations", async (req: Request, res) => {
   // Enrich with current health if cache is warm
   const health = deviceHealthCache;
   const offlineSet = new Set(health?.offlineDevices.map((d) => d.name) ?? []);
-  const onlineSet = new Set<string>();
-  if (health) {
-    health.offlineDevices.forEach((d) => { /* already in offlineSet */ });
-    // We don't have a per-device online list in the cache; derive from total counts
-  }
   const devices = locs.map((d) => ({
     name: d.name,
     address: d.address,
     lat: d.lat,
     lng: d.lng,
     size: d.size,
-    azimuth: d.azimuth,
+    network: d.network,
     status: health ? (offlineSet.has(d.name) ? "offline" : "online") : "unknown",
   }));
   res.json({ devices, checkedAt: health?.checkedAt ?? null });

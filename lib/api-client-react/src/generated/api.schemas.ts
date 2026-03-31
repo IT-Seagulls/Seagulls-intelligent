@@ -151,7 +151,7 @@ export interface DeviceMapPin {
   lat: number;
   lng: number;
   size: string;
-  azimuth: number;
+  network: "amman" | "airport";
   status: "online" | "offline" | "unknown";
 }
 

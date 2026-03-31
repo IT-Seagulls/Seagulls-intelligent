@@ -1,812 +1,738 @@
 [
   {
     "name": "DP2001",
-    "screenId": 355977264,
-    "address": "Zahran St. intersection with Tunis St., Towards 5th circle",
+    "address": "ش. زهران باتجاه الدوار الخامس من الرابع مع تقاطع ش تونس",
     "lat": 31.958143,
     "lng": 35.886621,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 110
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2002",
-    "screenId": 345327904,
-    "address": "Zahran St. Intersection with Khalif As-Sumayhat St. Next to Sama Telecom",
+    "address": "ش. زهران بإتجاه الدوار الرابع من الخامس بجانب سما للاتصالات",
     "lat": 31.958941,
     "lng": 35.884118,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 305
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2003",
-    "screenId": 345327921,
-    "address": "Zahran St. intersection with Ibn Khaldoun St.",
+    "address": "ش. زهران بإتجاه الدوار الثالث من الرابع  تقاطع ش ابن خلدون",
     "lat": 31.955368,
     "lng": 35.899049,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 290
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2004",
-    "screenId": 345327924,
-    "address": "Zahran St. intersection with Amin Merei St.",
+    "address": "ش. زهران بإتجاه الدوارالرابع من الخامس مع تقاطع ش. امين مرعي",
     "lat": 31.957214,
     "lng": 35.890367,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 290
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2005",
-    "screenId": 345327927,
-    "address": "Zahran St. Towards 7th circle, on the street opposite to National Electric Power Co",
+    "address": "ش. زهران  باتجاه الدوار السابع  من السادس مقابل شركة الكهرباء الوطنية",
     "lat": 31.959933,
     "lng": 35.863401,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 90
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2006",
-    "screenId": 345327930,
-    "address": "Zahran St. Towards the 5th circle infront of the Kuwaiti Embassy",
-    "lat": 31.95725,
-    "lng": 35.891083,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 110
+    "address": "ش. زهران باتجاه الدوار الخامس من الرابع بجانب السفارة الكويتية",
+    "lat": 31.956932,
+    "lng": 35.892613,
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2007",
-    "screenId": 345327933,
-    "address": "Zahran St. Towards the 6th circle, Next to Mawwal Resturant",
+    "address": "ش. زهران  باتجاه الدوار السادس من السابع بجانب مطعم موال",
     "lat": 31.960117,
     "lng": 35.867799,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 275
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2008",
-    "screenId": 345327936,
-    "address": "Queen Noor St. Towards the 4th circle before Abella hypermarket",
-    "lat": 31.963463,
-    "lng": 35.8992,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 30
+    "address": "ش. الملكة نور باتجاه دوار الرابع من دوار  الشميساني قبل الاهلية ابيلا",
+    "lat": 31.96305,
+    "lng": 35.899082,
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2009",
-    "screenId": 345327950,
-    "address": "Queen Noor St. intersection with Ahmad Bani Melhem St. Towards Shemisani circle",
+    "address": "ش. الملكة نور باتجاه دوار الشميساني من الرابع مع تقاطع ش. احمد بني ملحم",
     "lat": 31.958634,
     "lng": 35.897529,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 207
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2010",
-    "screenId": 345327953,
-    "address": "Zahran St. Towards the 6th circle, Next to Jabri Resturant",
+    "address": "ش. زهران باتجاه الدوار السادس من الخامس بجانب بنك ستاندرد",
     "lat": 31.960941,
     "lng": 35.875817,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 90
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2011",
-    "screenId": 345327956,
-    "address": "Zahran St. Intersection with Abdul Rahman Aalawi St. Next to The Mill bakery",
+    "address": "ش. زهران بإتجاه الدوار الخامس من السادس بجانب الطاحونة مع تقاطع ش. عبدالرحمن علاوي",
     "lat": 31.960743,
     "lng": 35.876048,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 270
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2012",
-    "screenId": 345327959,
-    "address": "Mecca St. Next to Social Café",
+    "address": "ش. مكة المكرمة من تقاطع الحرمين بإتجاه ش. الكندي بجانب كافيه Social",
     "lat": 31.973723,
     "lng": 35.869158,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 290
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2013",
-    "screenId": 345327962,
-    "address": "Saleh As Samadi St. Next to Safeway 7th circle",
+    "address": "ش. صالح الصمادي بجانب سيفوي السابع",
     "lat": 31.954535,
     "lng": 35.857316,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 85
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2014",
-    "screenId": 345327965,
-    "address": "Al-Madina Al-Monawara St. Next to Ayass Hotel.",
+    "address": "ش. المدينة المنورة بإتجاه ش. زهران من ش. الملكة رانيا بجانب فندق اياس",
     "lat": 31.982326,
     "lng": 35.864787,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 20
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2015",
-    "screenId": 345327968,
-    "address": "Al-Madina Al-Monawara St. Next to Centro Stores",
+    "address": "ش. المدينة المنورة بإتجاه ش. زهران من ش. الملكة رانيا بجانب سنترو",
     "lat": 31.979247,
     "lng": 35.86515,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 0
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2016",
-    "screenId": 345327971,
-    "address": "Abdallah Ghosheh St. Next to Qaisi Complex",
+    "address": "ش. عبدالله غوشة بإتجاه ش. مكة من السابع بجانب مجمع القيسي",
     "lat": 31.966779,
     "lng": 35.855661,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 170
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2017",
-    "screenId": 345327977,
-    "address": "Wasfi Al Tal St. before O3 ozoone",
+    "address": "ش. وصفي التل باتجاه دوار خلدا بجانب فندق سما باريس",
     "lat": 31.983566,
     "lng": 35.89169,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 117
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2018",
-    "screenId": 345327980,
-    "address": "Mecca St. on the traffic light coming from Saed Ben Abi Waqqas St.",
+    "address": "ش. مكة المكرمة عالاشارة القادم من سعد بن ابي وقاص",
     "lat": 31.969476,
     "lng": 35.878038,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 330
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2019",
-    "screenId": 345327983,
-    "address": "Mecca St. on the traffic light coming from Naim Abdul Hadi St.",
+    "address": "ش. مكة المكرمة عالاشارة القادم من نعيم عبد الهادي",
     "lat": 31.969842,
     "lng": 35.877998,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 150
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2020",
-    "screenId": 345327986,
-    "address": "Mecca St. Next to Zepter",
+    "address": "ش. مكة المكرمة باتجاه دوار الشعب من ش. الكندي بجانب zepter",
     "lat": 31.971523,
     "lng": 35.8761,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 145
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2021",
-    "screenId": 345327989,
-    "address": "Zahran St. towards 7th circle from 8th circle, Nawabigh school entrance",
+    "address": "ش. زهران باتجاه الدوار السابع من الثامن دخلة مدارس النوابغ",
     "lat": 31.958456,
     "lng": 35.853036,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 255
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2022",
-    "screenId": 345327992,
-    "address": "Princess Alia St. intersection with Saeed Al-Mufti St.",
+    "address": "ش. الاميرة عالية مع تقاطع ش. سعيد المفتي",
     "lat": 31.954974,
     "lng": 35.870475,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 10
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2023",
-    "screenId": 345327996,
-    "address": "Al- Madina AL-Monawara St. infront of Mahmoudia Motors - Jaguar Jordan",
+    "address": "ش. المدينة المنورة بجانب المحمودية جاغور",
     "lat": 31.986938,
     "lng": 35.866356,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 20
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2024",
-    "screenId": 345327999,
-    "address": "Al-Madina Al-Monawara St. next to Markit & More",
+    "address": "ش. المدينة المنورة باتجاه زهران من ش. الملكة رانيا بجانب markit & more",
     "lat": 31.968217,
     "lng": 35.864211,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 10
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2025",
-    "screenId": 345328002,
-    "address": "Mecca St. in the direction of Kindi St. towards Zero Point",
+    "address": "ش. مكة المكرمة باتجاه ش الكندي من دوار الشعب بجانب zero point",
     "lat": 31.973994,
     "lng": 35.840928,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 255
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2026",
-    "screenId": 345328005,
-    "address": "Al Assaf traffic lights, the intersection of Al-Mohammedeyah St. with Wasfi Al-Tal Infront of Bashiti Depot",
+    "address": "ش. وصفي التل باتجاه دوار خلدا بجانب البشيتي مع تقاطع  ش. المحمدية",
     "lat": 31.994174,
     "lng": 35.859618,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 125
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2027",
-    "screenId": 345328008,
-    "address": "King Abdullah the 2nd St. infront of Zain telecom",
+    "address": "ش. الملك عبدالله الثاني بإتجاه صويلح من الثامن بجانب شركة زين",
     "lat": 31.96365,
     "lng": 35.844211,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 165
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2028",
-    "screenId": 345328011,
-    "address": "Al- Madina Al-Monawara St. intersection with youssef Al-Qana St. Next to Zubaydah Salon",
+    "address": "ش. المدينة المنورة باتجاه ش. الملكة رانيا من ش. زهران مع تقاطع ش يوسف القنه",
     "lat": 31.963026,
     "lng": 35.86518,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 170
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2029",
-    "screenId": 345328014,
-    "address": "Princes Zeinab St. infront of Rawan Cake in Um Al Summaq",
+    "address": "ش. الاميرة زينب بنت الحسين باتجاه بلدية ام السماق مقابل روان كيك",
     "lat": 31.979865,
     "lng": 35.84911,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 180
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2030",
-    "screenId": 345328023,
-    "address": "Zahran St. interesection with Farid As-Saed St.",
+    "address": "ش. زهران بإتجاه الدوار الثالث من الرابع مع فريد السعد",
     "lat": 31.953709,
     "lng": 35.907383,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 275
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2031",
-    "screenId": 345328026,
-    "address": "Princess Alia St. intersection with Jamil Tutanji St.",
+    "address": "ش. الاميرة عالية مع تقاطع ش جميل التوتنجي",
     "lat": 31.955122,
     "lng": 35.870742,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 190
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2032",
-    "screenId": 345328035,
-    "address": "Mecca St. Towards Al- Kindi St. Next To Al-Thawabit Complex",
+    "address": "ش. مكة المكرمة باتجاه ش. الكندي من دوار الشعب بجانب مجمع الثوابت",
     "lat": 31.970674,
     "lng": 35.876656,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 325
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2033",
-    "screenId": 345328038,
-    "address": "Al-Madina Al-Monawara St. Towards Akef AL - Fayiz St. Next to Carrefour",
+    "address": "ش. المدينة المنورة باتجاه ش. الملكة رانيا من ش. زهران بجانب كارفور",
     "lat": 31.999527,
     "lng": 35.873234,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 215
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2034",
-    "screenId": 345328043,
-    "address": "Queen Noor St. intersection with Adib Wehbeh St. Jordan hospital entrance",
+    "address": "ش. الملكة نور باتجاه دوار الشميساني من الرابع مدخل مستشفى الاردن",
     "lat": 31.961406,
     "lng": 35.898662,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 205
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2035",
-    "screenId": 345328056,
-    "address": "Princess Alia St. intersection with Rushdi As-Safadi St.",
+    "address": "ش. الاميرة عالية باتجاه ش. الملكة زين الشرف من السادس مع تقاطع ش رشدي الصفدي",
     "lat": 31.957851,
     "lng": 35.87053,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 5
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2036",
-    "screenId": 345328060,
-    "address": "Al- Madina AL-Monawara St. towards Zahran St. Next to Kabatilo",
+    "address": "ش. المدينة المنورة باتجاه زهران من ش. الملكة رانيا  بجانب كباتيلو",
     "lat": 31.995308,
     "lng": 35.870742,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 25
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2037",
-    "screenId": 345328283,
-    "address": "Abdallah Ghosheh St. Towards 7th circle, Next to Ritaj Pharmacy",
+    "address": "ش. عبدالله غوشة باتجاه الدوار السابع من ش. مكة قرب صيدلية ريتاج",
     "lat": 31.96475,
     "lng": 35.856009,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 350
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2038",
-    "screenId": 345328286,
-    "address": "Wasfi Al-Tal St.  Intersection with Merza Wasfi St. on Al Assaf Traffic light",
+    "address": "ش. وصفي التل اشارت البشيتي باتجاه سيفوي الشميساني مع تقاطع ش. ميرزا وصفي",
     "lat": 31.993846,
     "lng": 35.859748,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 302
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2039",
-    "screenId": 345328314,
-    "address": "Al-Madina Al-Monawara St. Next to Burger Makers",
+    "address": "ش. المدينة المنورة باتجاه ش. الملكة رانيا من ش. زهران  بجانب برجر ميكر",
     "lat": 31.994226,
     "lng": 35.870544,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 215
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2040",
-    "screenId": 345328320,
-    "address": "Abdallah Ghosheh St. intersection with Sultan Al- Hend St.",
+    "address": "ش. عبدالله غوشة باتجاه الدوار السابع من ش. مكة قرب صيدلية ريتاج",
     "lat": 31.972499,
     "lng": 35.853966,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 0
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2041",
-    "screenId": 345328336,
-    "address": "Zahran St. intersection with Tawfiq Abu Al-huda St. Ministry of justice entrance",
+    "address": "ش. زهران باتجاه الدوار الرابع من الثالث مدخل وزارة العدل تقاطع ش. توفيق ابو الهدى",
     "lat": 31.953941,
     "lng": 35.907387,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 90
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2042",
-    "screenId": 345328341,
-    "address": "Mecca St. Next to Tahboub Group",
+    "address": "ش. مكة المكرمة باتجاه دوار الشعب من ش. الكندي بجانب مطابخ طهبوب",
     "lat": 31.975339,
     "lng": 35.845297,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 87
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2043",
-    "screenId": 345328346,
-    "address": "Mecca St. infront of Bank al -Etihad",
+    "address": "ش. مكة المكرمة باتجاه دوار الشعب من ش. الكندي بجانب بنك الاتحاد",
     "lat": 31.974609,
     "lng": 35.841817,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 75
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2044",
-    "screenId": 345328353,
-    "address": "King Abdullah the 2nd St. infront of City mall",
+    "address": "ش. الملك عبدالله الثاني باتجاه صويلح من الثامن مدخل سيتي مول",
     "lat": 31.979392,
     "lng": 35.836222,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 165
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2045",
-    "screenId": 345328358,
-    "address": "Mohammad Ali Janah St. intersection with Princess Basma St.  towards 5th circle",
+    "address": "ش.محمد علي جناح باتجاه الخامس مع تقاطع ش الاميرة بسمة",
     "lat": 31.957848,
     "lng": 35.879062,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 0
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2046",
-    "screenId": 345328363,
-    "address": "Mecca St. towards Kindi St. next to hijazi Electronics",
+    "address": "ش. مكة المكرمة باتجاه ش. الكندي من دوار الشعب بجانب  حجازي للكهرباء والتكييف",
     "lat": 31.975323,
     "lng": 35.847345,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 265
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2047",
-    "screenId": 345328369,
-    "address": "Mecca St. coming from Al Sha'b Circle nect to Husieni Complex",
+    "address": "ش. مكة بإتجاه دوار الحرمين من دوار الشعب بجانب مجمع الحسيني",
     "lat": 31.975323,
     "lng": 35.862533,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 290
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2048",
-    "screenId": 345328373,
-    "address": "Rainbow St. towards Downtown next to Sadiq Home",
+    "address": "ش. الرينبو بإتجاه وسط البلد من الدوار الاول بجانب صادق هوم",
     "lat": 31.94911,
     "lng": 35.927895,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 280
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2049",
-    "screenId": 345328376,
-    "address": "Emraan al ma'aytah St. infront of Tche Tche Café",
+    "address": "ش. نائب عمران المعايطة من ش. الاميرة عالية مقابل كافيه تشيه تشيه",
     "lat": 31.948857,
     "lng": 35.864669,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 100
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP2050",
-    "screenId": 345328379,
-    "address": "Mecca St. intersection with Moussa Abd As-Salam Haneyah St. Towards Al-Sha'b Circle",
+    "address": "ش. مكة المكرمة باتجاه دوار الشعب من ش. الكندي بجانب ابراج الحجاز",
     "lat": 31.975793,
     "lng": 35.860347,
-    "pixels": "320*512",
-    "size": "1.25*2m",
-    "azimuth": 110
+    "size": "2.5 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8001",
-    "screenId": 345328382,
-    "address": "Prince Hashem St. next to Quicksand gym",
+    "address": "ش. الأمير هاشم بإتجاه دوار عبدون من الياسمين بجانب هارد روك",
     "lat": 31.942992,
     "lng": 35.890092,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 207
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8003",
-    "screenId": 345328385,
-    "address": "Cairo St. on Abdoun Circle Infront of McDonald's",
+    "address": "ش. القاهرة دوار عبدون بجانب ماكدونالز",
     "lat": 31.948711,
     "lng": 35.892911,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 260
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8005",
-    "screenId": 345328388,
-    "address": "Al- Madina Al-Monawara St. intersection with Khalil As-Salem St. (Sultan market)",
+    "address": "ش. شارع المدينة المنورة بإتجاه ش. زهران من ش. الملكة رانيا (سوق السلطان)",
     "lat": 31.999652,
     "lng": 35.87299,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 35
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8007",
-    "screenId": 345328391,
-    "address": "Princess Alia St. intersection with Queen Zein Sharaf St. opposite to Nadine Hotel Suites",
+    "address": "ش. زين الشرف مع ش. الاميرة عالية بإتجاه دوار النهضة (اشارات دير غبار)",
     "lat": 31.946671,
     "lng": 35.869946,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 95
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8009",
-    "screenId": 345328394,
-    "address": "Prince Hashem St. Opposite Quicksand going toward Taj Mall",
+    "address": "ش. الامير هاشم بإتجاه الياسمين من دوار عبدون (مقابل هاردروك)",
     "lat": 31.942958,
     "lng": 35.889678,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 25
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8011",
-    "screenId": 345328397,
-    "address": "Prince Hussien bin Abdullah St. coming from Sonobar palace (Resturant)",
+    "address": "ش. الأمير الحسين بن عبدالله بإتجاه جسر الياسمين من المطار بجانب قصر الصنوبر",
     "lat": 31.91948,
     "lng": 35.863829,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 240
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8013",
-    "screenId": 345328403,
-    "address": "Prince Husein bin Abdullah St. intersection with Sharif Ali Bin Zain Al-Oun St. toward Airport Rd.",
+    "address": "ش. الأمير الحسين بن عبدالله بإتجاه المطار مع تقاطع ش. الشريف علي بن زيد ال عون",
     "lat": 31.928476,
     "lng": 35.879084,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 80
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8015",
-    "screenId": 345328406,
-    "address": "Mecca St. interesection with K. Faysal ben Abdul Aziz St.",
+    "address": "ش. مكة اشارة ام اذينة بإتجاه ش. الكندي مع تقاطع ش. الملك فيصل بن عبد العزيز",
     "lat": 31.973239,
     "lng": 35.87156,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 290
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8017",
-    "screenId": 345328409,
-    "address": "8th Circle, from 7th circle",
+    "address": "الدوار الثامن- من السابع",
     "lat": 31.956769,
     "lng": 35.847631,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 220
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8019",
-    "screenId": 345328412,
-    "address": "Shatt al-Arab St. facing Saed Ben Abi Waqqas St. infront of Imseeh Jewlery",
+    "address": "ش. شط العرب بداية الجزيرة الوسطية  من سعد بن ابي وقاص (سوق الذهب)",
     "lat": 31.966818,
     "lng": 35.874582,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 87
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8021",
-    "screenId": 345328415,
-    "address": "Abdallah Ghosheh St. intersection with Barakat Al- Zoobi St. infront of Al Nabil Food Industry Co.",
+    "address": "ش.عبدالله غوشه بإتجاه السابع من ش. مكة مع تقاطع ش.  بركات الزعبي مقابل نبيل",
     "lat": 31.965606,
     "lng": 35.855697,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 350
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8023",
-    "screenId": 345328418,
-    "address": "Zain al sharaf St. intersection with sharif Ali ben Zaid al-oun St. towards American Embassy",
+    "address": "ش. زين الشرف مع ش. الشريف علي بن زيد ال عون بإتجاة السفارة الامريكية (اشارات دير غبار)",
     "lat": 31.946416,
     "lng": 35.870273,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 270
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8025",
-    "screenId": 345328421,
-    "address": "4th Circle, from Abdoun",
+    "address": "الدوار الرابع من دوار عبدون",
     "lat": 31.955628,
     "lng": 35.896331,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 185
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8027",
-    "screenId": 345328424,
-    "address": "7th circle, from the Airport Rd.",
+    "address": "الدوار السابع من المطار",
     "lat": 31.959061,
     "lng": 35.857728,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 350
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8029",
-    "screenId": 345328432,
-    "address": "7th circle, from 8th circle",
+    "address": "الدوار السابع من الثامن",
     "lat": 31.959387,
     "lng": 35.857277,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 85
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8031",
-    "screenId": 345328437,
-    "address": "2nd Circle coming from 3rd circle",
+    "address": "الدوار الثاني من الدوار الثالث",
     "lat": 31.95175,
     "lng": 35.915389,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 300
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8033",
-    "screenId": 345328441,
-    "address": "3rd cirlce , from Al-Kuroum St. (Shmesani)",
+    "address": "الدوار الثالث  من الشميساني",
     "lat": 31.954294,
     "lng": 35.910311,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 100
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8035",
-    "screenId": 345328444,
-    "address": "Zahran St. 4th Circle coming from the 3rd circle",
+    "address": "الدوار الرابع من الثالث",
     "lat": 31.956047,
     "lng": 35.896557,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 270
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8037",
-    "screenId": 345328447,
-    "address": "Al- Madina Al-Monawara St. intersection with Ahmad Suleiman An-Nejdawi St.",
+    "address": "ش. المدينة المنورة مع تقاطع ش. احمد سليمان النجداوي (مدخل الرابية)",
     "lat": 31.981109,
     "lng": 35.865232,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 180
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8039",
-    "screenId": 345328450,
-    "address": "Al Sha'b Circle, from Mecca St.",
+    "address": "دوار الشعب من ش مكه",
     "lat": 31.973816,
     "lng": 35.839709,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 225
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8041",
-    "screenId": 345328453,
-    "address": "Zahran St. 5th Circle coming from the 4th circle",
+    "address": "الدوار الخامس من الرابع",
     "lat": 31.960693,
     "lng": 35.881238,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 300
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8043",
-    "screenId": 345328456,
-    "address": "Zahran St. 6th Circle from 7th circle",
+    "address": "الدوار السادس من السابع",
     "lat": 31.960396,
     "lng": 35.870613,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 90
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8045",
-    "screenId": 345328459,
-    "address": "First circle going to Rainbow St.",
+    "address": "الدوار الاول باتجاه ش. الرينبو",
     "lat": 31.950662,
     "lng": 35.92318,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 270
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8047",
-    "screenId": 345328462,
-    "address": "Zahran St. 6th Circle from 5th circle",
+    "address": "الدوار السادس من الخامس",
     "lat": 31.960508,
     "lng": 35.871251,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 270
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8049",
-    "screenId": 345328466,
-    "address": "Al- Haramayn interchange, from Mecca St.",
+    "address": "دوار الحرمين من دوار الشعب",
     "lat": 31.974691,
     "lng": 35.864852,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 90
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8051",
-    "screenId": 345328470,
-    "address": "Al waha Circle, from Safeway, Shemisani",
+    "address": "دوار الواحة من سيفوي الشميساني",
     "lat": 31.990977,
     "lng": 35.868946,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 280
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8053",
-    "screenId": 345328474,
-    "address": "Al- Haramayn interchange coming from Kindi St.",
+    "address": "دوار الحرمين من ش. الكندي",
     "lat": 31.974449,
     "lng": 35.866044,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 260
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8055",
-    "screenId": 345328479,
-    "address": "Zahran St. 5th Circle from the 6th circle",
+    "address": "الدوار الخامس من السادس",
     "lat": 31.960826,
     "lng": 35.880873,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 120
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8057",
-    "screenId": 392649281,
-    "address": "Wadi Saqra to Arar st",
-    "lat": 31.966561,
-    "lng": 35.88705,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 345
+    "address": "اشارة الحدائق",
+    "lat": 31.96652,
+    "lng": 35.887158,
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
     "name": "DP8059",
-    "screenId": 355685726,
-    "address": "Zain Abdoun Roundabout , from Al- Hshemeyin St.",
+    "address": "دوار زين عبدون من  ش.الهاشميين",
     "lat": 31.942523,
     "lng": 35.880189,
-    "pixels": "832*640",
-    "size": "3.25*2.5m",
-    "azimuth": 80
+    "size": "8 SQM",
+    "network": "amman"
   },
   {
-    "name": "Irbid",
-    "screenId": 1080989187,
-    "address": "Hassan Sports City circle to King Abdullah II St.",
-    "lat": 32.535667,
-    "lng": 35.863542,
-    "pixels": "1152*768",
-    "size": "5*4m",
-    "azimuth": 300
+    "name": "Aura From Airport-A",
+    "address": "Airport Bridge towards Amman-face A",
+    "lat": 31.727025,
+    "lng": 35.946158,
+    "size": "50 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "Aura From Airport-Z",
+    "address": "Airport Bridge towards Amman-face Z",
+    "lat": 31.727025,
+    "lng": 35.946158,
+    "size": "50 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "Aura To Airport-A",
+    "address": "Airport Bridge towards the airport-face A",
+    "lat": 31.727,
+    "lng": 35.945625,
+    "size": "50 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "Aura To Airport-Z",
+    "address": "Airport Bridge towards the airport-face Z",
+    "lat": 31.727,
+    "lng": 35.945625,
+    "size": "50 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "AR-DP2001",
+    "address": "Airport Road/Towards the airport after Madaba Bridge",
+    "lat": 31.807411,
+    "lng": 35.911947,
+    "size": "19 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "AR-DP2002",
+    "address": "Airport Road/Towards the Airport Airport Bridge Entrance",
+    "lat": 31.724031,
+    "lng": 35.946519,
+    "size": "19 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "AR-DP2003",
+    "address": "Airport Road/Towards Amman, next to Total Station",
+    "lat": 31.731403,
+    "lng": 35.944906,
+    "size": "19 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "AR-DP2004",
+    "address": "Airport Road/Towards Amman, Madaba Street Entrance before Madaba Bridge",
+    "lat": 31.811992,
+    "lng": 35.909444,
+    "size": "19 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "AR-DP5401",
+    "address": "Airport Road/Towards the Airport before the Middle East University Tunnel",
+    "lat": 31.800536,
+    "lng": 35.916364,
+    "size": "54 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "AR-DP5402",
+    "address": "Airport Road/Towards the Airport next to Baby Cord",
+    "lat": 31.748117,
+    "lng": 35.94125,
+    "size": "54 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "AR-DP5403",
+    "address": "Airport Road / Towards Amman, opposite the American Products Exhibition",
+    "lat": 31.751161,
+    "lng": 35.941597,
+    "size": "54 SQM",
+    "network": "airport"
+  },
+  {
+    "name": "AR-DP5404",
+    "address": "Airport Road/Towards Amman before Madaba Bridge",
+    "lat": 31.809669,
+    "lng": 35.911125,
+    "size": "54 SQM",
+    "network": "airport"
   }
 ]
