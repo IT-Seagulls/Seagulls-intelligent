@@ -175,15 +175,19 @@ export default function Dashboard() {
     "2026": "#e55a5a",
   };
   const yearlyOverlay = (() => {
-    const byMonth: Record<string, Record<string, number>> = {};
+    const byMonth: Record<string, Record<string, number | null>> = {};
     MONTH_LABELS.forEach((m) => { byMonth[m] = {}; });
     for (const row of monthlyResponse?.data || []) {
       const [yr, mo] = row.month.split("-");
       const label = MONTH_LABELS[parseInt(mo) - 1];
-      if (label) byMonth[label][yr] = row.ammanDailyAvg;
+      if (!label) continue;
+      byMonth[label][yr] = row.ammanDailyAvg;
+      if (row.airportRoadDailyAvg != null) byMonth[label][`ar_${yr}`] = row.airportRoadDailyAvg;
     }
     return MONTH_LABELS.map((m) => ({ month: m, ...byMonth[m] }));
   })();
+  // Airport Road years that have at least one month of data
+  const arYears = ["2025", "2026"];
   const years = ["2022", "2023", "2024", "2025", "2026"];
   const yearLabels: Record<string, string> = {
     "2022": "2022", "2023": "2023", "2024": "2024", "2025": "2025",
@@ -552,9 +556,9 @@ export default function Dashboard() {
             <div className="mb-5">
               <Card>
                 <CardHeader className="px-4 pt-4 pb-2">
-                  <CardTitle className="text-base flex items-center gap-1.5">📈 Year-over-Year Traffic — Amman (Daily Average) <InfoTooltip text="Each line is one full calendar year plotted Jan–Dec. Compare seasonality and trends across 2022–2026. 2026 is dashed since only Q1 data is available." /></CardTitle>
+                  <CardTitle className="text-base flex items-center gap-1.5">📈 Year-over-Year Traffic — Daily Average <InfoTooltip text="Each line is one calendar year plotted Jan–Dec. Solid = Amman network, dashed = Airport Road (data from Jun 2025). 2026 shown as dotted since only Q1 is available." /></CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Each line = one calendar year · overlaid by month for direct comparison
+                    Amman (solid) · Airport Road (dashed, from Jun 2025) · one line per year overlaid Jan–Dec
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -596,6 +600,20 @@ export default function Dashboard() {
                             strokeDasharray={yr === "2026" ? "6 3" : undefined}
                             dot={false}
                             connectNulls
+                            isAnimationActive={false}
+                          />
+                        ))}
+                        {arYears.map((yr) => (
+                          <Line
+                            key={`ar_${yr}`}
+                            type="monotone"
+                            dataKey={`ar_${yr}`}
+                            name={`Airport Rd ${yr === "2026" ? "2026 (Q1)" : yr}`}
+                            stroke={YEAR_COLORS[yr]}
+                            strokeWidth={1.5}
+                            strokeDasharray="5 4"
+                            dot={false}
+                            connectNulls={false}
                             isAnimationActive={false}
                           />
                         ))}
