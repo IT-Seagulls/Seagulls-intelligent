@@ -141,6 +141,33 @@ The `artifacts/traffic-dashboard` React app and `artifacts/api-server` Express A
 2. Gate tabs, downloads, and detail views behind role checks
 3. IT sets each SharePoint page to embed a specific role URL — no AD SDK integration needed in the app
 
+---
+
+## Planned: Offline Screen Email Alerts
+
+When a screen stops sending traffic counts, send an email notification automatically.
+
+**How it works:**
+- API server already polls device health every 5 minutes
+- Add a background monitor that compares current offline devices against a known-offline set
+- Send one email when a device **goes offline** (not every poll — only on state change)
+- Send a recovery email when it **comes back online**
+
+**Email delivery:** Office 365 SMTP (`smtp.office365.com:587`) via `nodemailer`
+
+**Secrets needed (add once on custom domain):**
+- `SMTP_USER` — sender email address (e.g. alerts@yourcompany.com)
+- `SMTP_PASS` — password or app password for that account
+- `ALERT_EMAIL_TO` — recipient(s), comma-separated
+
+**Env vars to set (not sensitive):**
+- `SMTP_HOST=smtp.office365.com`
+- `SMTP_PORT=587`
+
+**Implementation location:** `artifacts/api-server/src/routes/traffic.ts` — add a `startOfflineMonitor()` call after server start that wraps the existing `fetchDeviceHealth()` with state-diffing logic.
+
+NOTE: Outlook OAuth integration was dismissed — using SMTP fallback instead.
+
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
