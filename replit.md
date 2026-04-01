@@ -91,6 +91,56 @@ Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used b
 
 Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
 
+## Traffic Dashboard — Features
+
+The `artifacts/traffic-dashboard` React app and `artifacts/api-server` Express API serve a live traffic analytics dashboard for Jordan (Airport Road + Amman networks, 92 AdMobilize screens).
+
+**Key features:**
+- Live screen health monitoring (92 devices, 5-min refresh)
+- Hourly traffic volume chart (today, both networks)
+- Traffic Pattern — Last 7 Days chart (7-day avg + per-day overlay toggle)
+- Year-over-Year overlay chart (2022–2026, Amman solid + Airport Road dashed from Jun 2025)
+- Ramadan impact analysis (2022–2026)
+- Weather correlation (Open-Meteo, Pearson r)
+- Screen Performance vs Last Week (top movers)
+- Live map of all 92 screen locations (react-leaflet, color-coded by network + status)
+
+**Data exclusions:** Street Count devices and Irbid excluded from all calculations via `isExcluded()` regex.
+
+**API caches:** Hourly 30min · Weekly pattern 3h · Monthly/analysis/weather 6h · Device health 5min
+
+---
+
+## Planned: Role-Based Access Control (SharePoint + Active Directory)
+
+**Deployment model:** Dashboard embedded in SharePoint as iframe. AD security groups control which SharePoint page each user can access. Each page embeds a different role URL.
+
+**Roles and URL params:**
+
+| Role | URL param | AD Group (suggested) |
+|------|-----------|----------------------|
+| Viewer | `?role=viewer` | `Dashboard-Viewers` |
+| Analyst | `?role=analyst` | `Dashboard-Analysts` |
+| Admin | `?role=admin` | `Dashboard-Admins` |
+
+**Feature access per role:**
+
+| Feature | Viewer | Analyst | Admin |
+|---------|--------|---------|-------|
+| Overview KPIs + hourly chart | ✅ | ✅ | ✅ |
+| Traffic Pattern 7-day chart | ✅ | ✅ | ✅ |
+| Screen health banner | Summary only | Full detail | Full detail |
+| Insights tab (YoY, Ramadan, Weather) | ❌ | ✅ | ✅ |
+| Map tab | ❌ | ✅ | ✅ |
+| CSV download buttons | ❌ | ✅ | ✅ |
+| Screen Performance vs Last Week | ❌ | ✅ | ✅ |
+| Offline screen alerts (prominent) | ❌ | ❌ | ✅ |
+
+**Implementation approach when ready:**
+1. Read `role` from `new URLSearchParams(window.location.search).get('role')` in Dashboard.tsx
+2. Gate tabs, downloads, and detail views behind role checks
+3. IT sets each SharePoint page to embed a specific role URL — no AD SDK integration needed in the app
+
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
