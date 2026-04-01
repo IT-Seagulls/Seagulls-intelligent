@@ -75,12 +75,12 @@ async function getAdmobilizeToken(): Promise<string> {
   return j.accessToken;
 }
 
-async function fetchHourlyFromApi(date: string): Promise<{ arHour: number[]; amHour: number[] }> {
-  const token = await getAdmobilizeToken();
+async function fetchHourlyFromApi(date: string, token?: string): Promise<{ arHour: number[]; amHour: number[] }> {
+  const tok = token ?? await getAdmobilizeToken();
 
   const reportResp = await fetch(`${ADMOBILIZE_BASE}/projects/${PROJECT_ID}/report`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       email: process.env.ADMOBILIZE_EMAIL,
       startTime: `${date}T00:00:00Z`,
@@ -94,7 +94,7 @@ async function fetchHourlyFromApi(date: string): Promise<{ arHour: number[]; amH
   if (!reportJson.reportUrl) throw new Error("No reportUrl");
 
   const buf = Buffer.from(
-    await (await fetch(`${reportJson.reportUrl}?access_token=${token}`)).arrayBuffer()
+    await (await fetch(`${reportJson.reportUrl}?access_token=${tok}`)).arrayBuffer()
   );
   let csv: string;
   try { csv = gunzipSync(buf).toString("utf-8"); } catch { csv = buf.toString("utf-8"); }
@@ -150,6 +150,55 @@ async function getHourlyData(date: string): Promise<{ arHour: number[]; amHour: 
       amHour: loadFallbackCSV("amman.csv"),
     };
   }
+}
+
+// ── Weekly pattern cache ──────────────────────────────────────────────────────
+interface WeeklyPatternDay {
+  date: string;
+  dayName: string;
+  amman: number[];
+  airportRoad: number[];
+}
+interface WeeklyCache {
+  fetchedAt: number;
+  days: WeeklyPatternDay[];
+  avgByHour: { amman: number[]; airportRoad: number[] };
+}
+let weeklyCache: WeeklyCache | null = null;
+const WEEKLY_CACHE_TTL_MS = 3 * 60 * 60 * 1000; // 3 hours
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+async function fetchWeeklyData(): Promise<WeeklyCache> {
+  const now = Date.now();
+  if (weeklyCache && now - weeklyCache.fetchedAt < WEEKLY_CACHE_TTL_MS) return weeklyCache;
+
+  const token = await getAdmobilizeToken();
+
+  // Last 7 complete days (yesterday → 7 days ago), oldest first
+  const dates: string[] = [];
+  for (let i = 7; i >= 1; i--) {
+    const d = new Date(now - i * 86_400_000);
+    dates.push(d.toLocaleDateString("en-CA", { timeZone: "Asia/Amman" }));
+  }
+
+  const results = await Promise.all(dates.map((d) => fetchHourlyFromApi(d, token)));
+
+  const days: WeeklyPatternDay[] = results.map((r, idx) => {
+    const dt = new Date(dates[idx] + "T12:00:00+03:00");
+    return { date: dates[idx], dayName: DAY_NAMES[dt.getDay()], amman: r.amHour, airportRoad: r.arHour };
+  });
+
+  const ammanAvg = new Array(24).fill(0);
+  const arAvg = new Array(24).fill(0);
+  for (const day of days) {
+    for (let h = 0; h < 24; h++) {
+      ammanAvg[h] += day.amman[h] / 7;
+      arAvg[h] += day.airportRoad[h] / 7;
+    }
+  }
+
+  weeklyCache = { fetchedAt: now, days, avgByHour: { amman: ammanAvg, airportRoad: arAvg } };
+  return weeklyCache;
 }
 
 function wmoLabel(code: number): string {
@@ -434,6 +483,20 @@ router.get("/hourly", async (req: Request, res) => {
       dominantCondition: wmoLabel(dominantCode),
     },
   });
+});
+
+router.get("/hourly/week", async (req: Request, res) => {
+  try {
+    const data = await fetchWeeklyData();
+    res.json({
+      days: data.days,
+      avgByHour: data.avgByHour,
+      hourLabels: HOUR_ORDER,
+      cachedAt: new Date(data.fetchedAt).toISOString(),
+    });
+  } catch {
+    res.status(502).json({ error: "Failed to fetch weekly pattern" });
+  }
 });
 
 router.get("/devices/locations", async (req: Request, res) => {

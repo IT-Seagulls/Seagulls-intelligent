@@ -202,6 +202,20 @@ export interface DeviceMoversResponse {
   topDrop: DeviceMover[];
 }
 
+export interface WeeklyPatternDay {
+  date: string;
+  dayName: string;
+  amman: number[];
+  airportRoad: number[];
+}
+
+export interface WeeklyPatternResponse {
+  days: WeeklyPatternDay[];
+  avgByHour: { amman: number[]; airportRoad: number[] };
+  hourLabels: string[];
+  cachedAt: string;
+}
+
 export interface TrafficAnalysisResponse {
   ramadan: RamadanYearStat[];
   war: TrafficAnalysisResponseWar;

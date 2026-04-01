@@ -8,6 +8,7 @@ import {
   useGetDeviceMovers,
   useGetWeatherCorrelation,
   useGetDeviceLocations,
+  useGetWeeklyPattern,
 } from "@workspace/api-client-react";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -120,13 +121,16 @@ export default function Dashboard() {
   const { data: moversResponse, isLoading: moversLoading } = useGetDeviceMovers({
     query: { staleTime: 30 * 60 * 1000 },
   });
+  const { data: weeklyData, isLoading: weeklyLoading } = useGetWeeklyPattern();
 
   const loading = hourlyLoading || hourlyFetching;
 
   const [isDark, setIsDark] = useState(true);
   useEffect(() => { document.documentElement.classList.toggle("dark", isDark); }, [isDark]);
 
-  const [autoRefresh, setAutoRefresh]     = useState(false);
+  const [weeklyView, setWeeklyView]           = useState<"avg" | "byDay">("avg");
+  const [weeklyNetwork, setWeeklyNetwork]     = useState<"amman" | "airportRoad">("amman");
+  const [autoRefresh, setAutoRefresh]         = useState(false);
   const [isSpinning, setIsSpinning]       = useState(false);
   const [dropdownOpen, setDropdownOpen]   = useState(false);
   const [selectedIntervalMs, setSelectedIntervalMs] = useState(INTERVAL_OPTIONS[0].ms);
@@ -167,6 +171,8 @@ export default function Dashboard() {
   const tickColor    = isDark ? "#98999C" : "#71717a";
 
   const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const WEEKLY_DAY_COLORS = ["#e55a5a", "#f59e0b", "#14b8a6", "#0079F2", "#8b5cf6", "#ec4899", "#84cc16"];
+
   const YEAR_COLORS: Record<string, string> = {
     "2022": "#0079F2",
     "2023": "#795EFF",
@@ -417,6 +423,140 @@ export default function Dashboard() {
                     </ResponsiveContainer>
                   ) : (
                     <div className="w-full h-[340px] flex items-center justify-center text-muted-foreground">No data available</div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* ── Weekly Traffic Pattern ── */}
+            <div className="mb-4">
+              <Card>
+                <CardHeader className="px-4 pt-4 pb-2">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-1.5">
+                        📅 Traffic Pattern — Last 7 Days
+                        <InfoTooltip text="Shows the typical hourly traffic rhythm based on the last 7 complete days. '7-Day Avg' smooths all days into one average line per network. 'By Day' overlays each individual day so you can spot weekday vs weekend differences." />
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {weeklyView === "avg"
+                          ? "Average hourly count per network · last 7 complete days"
+                          : `Individual days overlaid · ${weeklyNetwork === "amman" ? "Amman network" : "Airport Road"}`}
+                      </p>
+                    </div>
+                    {/* View toggle */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex rounded-md overflow-hidden border text-xs"
+                        style={{ borderColor: isDark ? "rgba(255,255,255,0.15)" : "#e5e5e5" }}>
+                        {(["avg", "byDay"] as const).map((v) => (
+                          <button key={v} onClick={() => setWeeklyView(v)}
+                            className="px-3 py-1.5 font-medium transition-colors"
+                            style={{
+                              background: weeklyView === v ? (isDark ? "rgba(255,255,255,0.15)" : "#e5e7eb") : "transparent",
+                              color: weeklyView === v ? (isDark ? "#fff" : "#111") : tickColor,
+                            }}>
+                            {v === "avg" ? "7-Day Avg" : "By Day"}
+                          </button>
+                        ))}
+                      </div>
+                      {weeklyView === "byDay" && (
+                        <div className="flex rounded-md overflow-hidden border text-xs"
+                          style={{ borderColor: isDark ? "rgba(255,255,255,0.15)" : "#e5e5e5" }}>
+                          {(["amman", "airportRoad"] as const).map((n) => (
+                            <button key={n} onClick={() => setWeeklyNetwork(n)}
+                              className="px-3 py-1.5 font-medium transition-colors"
+                              style={{
+                                background: weeklyNetwork === n ? (isDark ? "rgba(255,255,255,0.15)" : "#e5e7eb") : "transparent",
+                                color: weeklyNetwork === n ? (isDark ? "#fff" : "#111") : tickColor,
+                              }}>
+                              {n === "amman" ? "Amman" : "Airport Rd"}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {weeklyLoading ? (
+                    <Skeleton className="w-full h-[280px]" />
+                  ) : weeklyData ? (
+                    <ResponsiveContainer width="100%" height={280} debounce={0}>
+                      {weeklyView === "avg" ? (
+                        <AreaChart
+                          data={weeklyData.hourLabels.map((h, i) => ({
+                            hour: h,
+                            amman: Math.round(weeklyData.avgByHour.amman[i]),
+                            airportRoad: Math.round(weeklyData.avgByHour.airportRoad[i]),
+                          }))}
+                          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="wkGradAR" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={CHART_COLORS.blue}   stopOpacity={0.45} />
+                              <stop offset="100%" stopColor={CHART_COLORS.blue}   stopOpacity={0.04} />
+                            </linearGradient>
+                            <linearGradient id="wkGradAM" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={CHART_COLORS.purple} stopOpacity={0.45} />
+                              <stop offset="100%" stopColor={CHART_COLORS.purple} stopOpacity={0.04} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                          <XAxis dataKey="hour" tick={{ fontSize: 12, fill: tickColor }} stroke={tickColor} tickMargin={10} minTickGap={20} />
+                          <YAxis tickFormatter={formatCompact} tick={{ fontSize: 12, fill: tickColor }} stroke={tickColor} tickMargin={10} axisLine={false} tickLine={false} />
+                          <Tooltip content={<CustomTooltip />} isAnimationActive={false} cursor={{ fill: "rgba(0,0,0,0.05)", stroke: "none" }} />
+                          <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: 16 }} />
+                          <Area type="monotone" dataKey="airportRoad" name="Airport Road (avg)" fill="url(#wkGradAR)" stroke={CHART_COLORS.blue}   strokeWidth={2} dot={false} isAnimationActive={false} />
+                          <Area type="monotone" dataKey="amman"       name="Amman (avg)"        fill="url(#wkGradAM)" stroke={CHART_COLORS.purple} strokeWidth={2} dot={false} isAnimationActive={false} />
+                        </AreaChart>
+                      ) : (
+                        <LineChart
+                          data={weeklyData.hourLabels.map((h, i) => {
+                            const row: Record<string, unknown> = { hour: h };
+                            weeklyData.days.forEach((d) => {
+                              row[`${d.dayName} ${d.date.slice(5).replace("-", "/")}`] = (weeklyNetwork === "amman" ? d.amman : d.airportRoad)[i] || null;
+                            });
+                            return row;
+                          })}
+                          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                          <XAxis dataKey="hour" tick={{ fontSize: 12, fill: tickColor }} stroke={tickColor} tickMargin={10} minTickGap={20} />
+                          <YAxis tickFormatter={formatCompact} tick={{ fontSize: 12, fill: tickColor }} stroke={tickColor} tickMargin={10} axisLine={false} tickLine={false} />
+                          <Tooltip
+                            content={({ active, payload, label }) => {
+                              if (!active || !payload?.length) return null;
+                              return (
+                                <div style={{ background: isDark ? "#1e1e2e" : "#fff", borderRadius: 6, padding: "10px 14px", border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "#e0e0e0"}`, color: isDark ? "#e5e5e5" : "#1a1a1a", fontSize: 12 }}>
+                                  <div style={{ marginBottom: 6, fontWeight: 500 }}>{label}</div>
+                                  {payload.filter((e: any) => e.value).map((e: any, i: number) => (
+                                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+                                      <span style={{ width: 8, height: 8, borderRadius: 2, background: e.color, display: "inline-block", flexShrink: 0 }} />
+                                      <span style={{ color: isDark ? "#aaa" : "#555" }}>{e.name}</span>
+                                      <span style={{ marginLeft: "auto", paddingLeft: 16, fontWeight: 600 }}>{typeof e.value === "number" ? e.value.toLocaleString() : "--"}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            }}
+                            isAnimationActive={false}
+                          />
+                          <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: 16 }} />
+                          {weeklyData.days.map((d, idx) => (
+                            <Line
+                              key={d.date}
+                              type="monotone"
+                              dataKey={`${d.dayName} ${d.date.slice(5).replace("-", "/")}`}
+                              stroke={WEEKLY_DAY_COLORS[idx % WEEKLY_DAY_COLORS.length]}
+                              strokeWidth={1.8}
+                              dot={false}
+                              connectNulls={false}
+                              isAnimationActive={false}
+                            />
+                          ))}
+                        </LineChart>
+                      )}
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="w-full h-[280px] flex items-center justify-center text-muted-foreground">No data available</div>
                   )}
                 </CardContent>
               </Card>

@@ -22,6 +22,7 @@ import type {
   MonthlyTrafficResponse,
   TrafficAnalysisResponse,
   WeatherCorrelationResponse,
+  WeeklyPatternResponse,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -546,6 +547,63 @@ export function useGetWeatherCorrelation<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetWeatherCorrelationQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns last-7-days hourly traffic pattern with per-day breakdown and averages
+ * @summary Weekly hourly pattern
+ */
+export const getGetWeeklyPatternUrl = () => {
+  return `/api/traffic/hourly/week`;
+};
+
+export const getWeeklyPattern = async (
+  options?: RequestInit,
+): Promise<WeeklyPatternResponse> => {
+  return customFetch<WeeklyPatternResponse>(getGetWeeklyPatternUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetWeeklyPatternQueryKey = () => {
+  return [`/api/traffic/hourly/week`] as const;
+};
+
+export const getGetWeeklyPatternQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWeeklyPattern>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getWeeklyPattern>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetWeeklyPatternQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWeeklyPattern>>> = ({
+    signal,
+  }) => getWeeklyPattern({ signal, ...requestOptions });
+  return { queryKey, queryFn, staleTime: 3 * 60 * 60 * 1000, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWeeklyPattern>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetWeeklyPatternQueryResult = NonNullable<Awaited<ReturnType<typeof getWeeklyPattern>>>;
+export type GetWeeklyPatternQueryError = ErrorType<unknown>;
+
+export function useGetWeeklyPattern<
+  TData = Awaited<ReturnType<typeof getWeeklyPattern>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getWeeklyPattern>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWeeklyPatternQueryOptions(options);
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
   };
