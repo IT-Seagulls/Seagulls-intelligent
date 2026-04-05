@@ -156,6 +156,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      '@replit/connectors-sdk':
+        specifier: ^0.3.0
+        version: 0.3.0
     devDependencies:
       prettier:
         specifier: ^3.8.1
@@ -1531,6 +1535,9 @@ packages:
       leaflet: ^1.9.0
       react: ^19.0.0
       react-dom: ^19.0.0
+
+  '@replit/connectors-sdk@0.3.0':
+    resolution: {integrity: sha512-JBHKPL69UsegdqXXxgUsz+mCps1YwbJELx7SxxsazR9+J3/TWPcuK/tNVO6mGP9Hd+AqeV2pF7BeODoOSyzfDg==}
 
   '@replit/vite-plugin-cartographer@0.5.1':
     resolution: {integrity: sha512-KiaQMx4ssTM8hSjMFscyIV1PN1bRVCWCFqN3fXOfXa39uFFCKUaeL3VvH/sxuy7S7ET+MCFOt+J7lLtL56bRrA==}
@@ -4274,6 +4281,8 @@ snapshots:
       leaflet: 1.9.4
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
+
+  '@replit/connectors-sdk@0.3.0': {}
 
   '@replit/vite-plugin-cartographer@0.5.1':
     dependencies:
