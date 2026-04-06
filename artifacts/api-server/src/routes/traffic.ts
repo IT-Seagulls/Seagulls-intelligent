@@ -62,13 +62,15 @@ function todayAmman(): string {
 }
 
 async function getAdmobilizeToken(): Promise<string> {
+  const email = process.env.ADMOBILIZE_EMAIL?.trim();
+  const password = process.env.ADMOBILIZE_PASSWORD;
+  if (!email || !password) {
+    throw new Error("AdMobilize credentials not configured");
+  }
   const r = await fetch(ADMOBILIZE_AUTH, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: process.env.ADMOBILIZE_EMAIL,
-      password: process.env.ADMOBILIZE_PASSWORD,
-    }),
+    body: JSON.stringify({ email, password }),
   });
   const j = (await r.json()) as { accessToken?: string };
   if (!j.accessToken) throw new Error("Auth failed");
@@ -168,11 +170,23 @@ let weeklyCache: WeeklyCache | null = null;
 const WEEKLY_CACHE_TTL_MS = 3 * 60 * 60 * 1000; // 3 hours
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+function weeklyPatternDayFromHourly(
+  dateStr: string,
+  amHour: number[],
+  arHour: number[],
+): WeeklyPatternDay {
+  const dt = new Date(dateStr + "T12:00:00+03:00");
+  return {
+    date: dateStr,
+    dayName: DAY_NAMES[dt.getDay()],
+    amman: amHour,
+    airportRoad: arHour,
+  };
+}
+
 async function fetchWeeklyData(): Promise<WeeklyCache> {
   const now = Date.now();
   if (weeklyCache && now - weeklyCache.fetchedAt < WEEKLY_CACHE_TTL_MS) return weeklyCache;
-
-  const token = await getAdmobilizeToken();
 
   // Last 7 complete days (yesterday → 7 days ago), oldest first
   const dates: string[] = [];
@@ -181,12 +195,19 @@ async function fetchWeeklyData(): Promise<WeeklyCache> {
     dates.push(d.toLocaleDateString("en-CA", { timeZone: "Asia/Amman" }));
   }
 
-  const results = await Promise.all(dates.map((d) => fetchHourlyFromApi(d, token)));
-
-  const days: WeeklyPatternDay[] = results.map((r, idx) => {
-    const dt = new Date(dates[idx] + "T12:00:00+03:00");
-    return { date: dates[idx], dayName: DAY_NAMES[dt.getDay()], amman: r.amHour, airportRoad: r.arHour };
-  });
+  let days: WeeklyPatternDay[];
+  try {
+    const token = await getAdmobilizeToken();
+    const results = await Promise.all(dates.map((d) => fetchHourlyFromApi(d, token)));
+    days = results.map((r, idx) =>
+      weeklyPatternDayFromHourly(dates[idx], r.amHour, r.arHour),
+    );
+  } catch {
+    const results = await Promise.all(dates.map((d) => getHourlyData(d)));
+    days = results.map((r, idx) =>
+      weeklyPatternDayFromHourly(dates[idx], r.amHour, r.arHour),
+    );
+  }
 
   const ammanAvg = new Array(24).fill(0);
   const arAvg = new Array(24).fill(0);
@@ -317,10 +338,24 @@ interface DeviceHealthCache {
 }
 let deviceHealthCache: DeviceHealthCache | null = null;
 const HEALTH_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+/** Short TTL when AdMobilize is unavailable so we retry without hammering the API. */
+let deviceHealthDegradedCache: DeviceHealthCache | null = null;
+let deviceHealthDegradedAt = 0;
+const HEALTH_DEGRADED_TTL_MS = 60 * 1000;
 
 const STREET_COUNT_RE = /^street\s*count/i;
 function isExcluded(name: string): boolean {
   return STREET_COUNT_RE.test(name) || name === "Irbid";
+}
+
+function degradedDeviceHealth(now: number): DeviceHealthCache {
+  const locs = getDeviceLocations();
+  return {
+    fetchedAt: now,
+    total: locs.length,
+    activeCount: locs.length,
+    offlineDevices: [],
+  };
 }
 
 async function fetchDeviceHealth(): Promise<DeviceHealthCache> {
@@ -328,62 +363,71 @@ async function fetchDeviceHealth(): Promise<DeviceHealthCache> {
   if (deviceHealthCache && now - deviceHealthCache.fetchedAt < HEALTH_CACHE_TTL_MS) {
     return deviceHealthCache;
   }
+  if (
+    deviceHealthDegradedCache &&
+    now - deviceHealthDegradedAt < HEALTH_DEGRADED_TTL_MS
+  ) {
+    return deviceHealthDegradedCache;
+  }
 
-  const token = await getAdmobilizeToken();
-  const r = await fetch(
-    `${ADMOBILIZE_BASE}/projects/${PROJECT_ID}/devices?pageSize=200`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  const j = (await r.json()) as {
-    devices?: {
-      id: string;
-      displayName: string;
-      state?: { online?: boolean; updateTime?: string };
-    }[];
-  };
+  try {
+    const token = await getAdmobilizeToken();
+    const r = await fetch(
+      `${ADMOBILIZE_BASE}/projects/${PROJECT_ID}/devices?pageSize=200`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    const j = (await r.json()) as {
+      devices?: {
+        id: string;
+        displayName: string;
+        state?: { online?: boolean; updateTime?: string };
+      }[];
+    };
 
-  const devices = (j.devices ?? []).filter((d) => !isExcluded(d.displayName));
-  const offlineDevices = devices
-    .filter((d) => !d.state?.online)
-    .map((d) => ({
-      id: d.id,
-      name: d.displayName,
-      lastSeen: d.state?.updateTime ?? null,
-    }));
+    const devices = (j.devices ?? []).filter((d) => !isExcluded(d.displayName));
+    const offlineDevices = devices
+      .filter((d) => !d.state?.online)
+      .map((d) => ({
+        id: d.id,
+        name: d.displayName,
+        lastSeen: d.state?.updateTime ?? null,
+      }));
 
-  deviceHealthCache = {
-    fetchedAt: now,
-    total: devices.length,
-    activeCount: devices.filter((d) => d.state?.online).length,
-    offlineDevices,
-  };
-  return deviceHealthCache;
+    deviceHealthCache = {
+      fetchedAt: now,
+      total: devices.length,
+      activeCount: devices.filter((d) => d.state?.online).length,
+      offlineDevices,
+    };
+    deviceHealthDegradedCache = null;
+    return deviceHealthCache;
+  } catch {
+    deviceHealthDegradedCache = degradedDeviceHealth(now);
+    deviceHealthDegradedAt = now;
+    return deviceHealthDegradedCache;
+  }
 }
 
 router.get("/devices/health", async (req: Request, res) => {
-  try {
-    const health = await fetchDeviceHealth();
-    res.json({
-      total: health.total,
-      activeCount: health.activeCount,
-      offlineCount: health.offlineDevices.length,
-      offlineDevices: health.offlineDevices,
-      checkedAt: new Date(health.fetchedAt).toISOString(),
-    });
-  } catch (err) {
-    res.status(502).json({ error: "Failed to fetch device health" });
-  }
+  const health = await fetchDeviceHealth();
+  res.json({
+    total: health.total,
+    activeCount: health.activeCount,
+    offlineCount: health.offlineDevices.length,
+    offlineDevices: health.offlineDevices,
+    checkedAt: new Date(health.fetchedAt).toISOString(),
+  });
 });
 
 router.get("/device-movers", async (req: Request, res) => {
-  try {
-    const todayDate = todayAmman();
-    const lastWeekDate = (() => {
-      const d = new Date(todayDate);
-      d.setDate(d.getDate() - 7);
-      return d.toISOString().slice(0, 10);
-    })();
+  const todayDate = todayAmman();
+  const lastWeekDate = (() => {
+    const d = new Date(todayDate);
+    d.setDate(d.getDate() - 7);
+    return d.toISOString().slice(0, 10);
+  })();
 
+  try {
     const now = Date.now();
     if (
       moverCache &&
@@ -401,8 +445,13 @@ router.get("/device-movers", async (req: Request, res) => {
 
     moverCache = { todayDate, lastWeekDate, fetchedAt: now, today, lastWeek };
     return res.json(buildMoverResponse(moverCache));
-  } catch (err) {
-    return res.status(502).json({ error: "Failed to fetch device movers" });
+  } catch {
+    return res.json({
+      today: todayDate,
+      lastWeek: lastWeekDate,
+      topGrowth: [],
+      topDrop: [],
+    });
   }
 });
 
@@ -486,37 +535,29 @@ router.get("/hourly", async (req: Request, res) => {
 });
 
 router.get("/hourly/week", async (req: Request, res) => {
-  try {
-    const data = await fetchWeeklyData();
-    res.json({
-      days: data.days,
-      avgByHour: data.avgByHour,
-      hourLabels: HOUR_ORDER,
-      cachedAt: new Date(data.fetchedAt).toISOString(),
-    });
-  } catch {
-    res.status(502).json({ error: "Failed to fetch weekly pattern" });
-  }
+  const data = await fetchWeeklyData();
+  res.json({
+    days: data.days,
+    avgByHour: data.avgByHour,
+    hourLabels: HOUR_ORDER,
+    cachedAt: new Date(data.fetchedAt).toISOString(),
+  });
 });
 
 router.get("/devices/locations", async (req: Request, res) => {
-  try {
-    const locs = getDeviceLocations();
-    const health = await fetchDeviceHealth();
-    const offlineSet = new Set(health.offlineDevices.map((d) => d.name));
-    const devices = locs.map((d) => ({
-      name: d.name,
-      address: d.address,
-      lat: d.lat,
-      lng: d.lng,
-      size: d.size,
-      network: d.network,
-      status: offlineSet.has(d.name) ? "offline" : "online",
-    }));
-    res.json({ devices, checkedAt: new Date(health.fetchedAt).toISOString() });
-  } catch {
-    res.status(502).json({ error: "Failed to fetch device locations" });
-  }
+  const locs = getDeviceLocations();
+  const health = await fetchDeviceHealth();
+  const offlineSet = new Set(health.offlineDevices.map((d) => d.name));
+  const devices = locs.map((d) => ({
+    name: d.name,
+    address: d.address,
+    lat: d.lat,
+    lng: d.lng,
+    size: d.size,
+    network: d.network,
+    status: offlineSet.has(d.name) ? "offline" : "online",
+  }));
+  res.json({ devices, checkedAt: new Date(health.fetchedAt).toISOString() });
 });
 
 export default router;
