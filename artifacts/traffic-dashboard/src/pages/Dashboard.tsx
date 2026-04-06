@@ -9,6 +9,9 @@ import {
   useGetWeatherCorrelation,
   useGetDeviceLocations,
   useGetWeeklyPattern,
+  getGetDeviceHealthQueryKey,
+  getGetDeviceLocationsQueryKey,
+  getGetDeviceMoversQueryKey,
 } from "@workspace/api-client-react";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -114,12 +117,23 @@ export default function Dashboard() {
   const { data: monthlyResponse, isLoading: monthlyLoading } = useGetMonthlyTraffic();
   const { data: analysisResponse, isLoading: analysisLoading } = useGetTrafficAnalysis();
   const { data: healthResponse, isLoading: healthLoading } = useGetDeviceHealth({
-    query: { refetchInterval: 5 * 60 * 1000 },
+    query: {
+      queryKey: getGetDeviceHealthQueryKey(),
+      refetchInterval: 5 * 60 * 1000,
+    },
   });
   const { data: weatherData, isLoading: weatherLoading } = useGetWeatherCorrelation();
-  const { data: locData } = useGetDeviceLocations({ query: { refetchInterval: 5 * 60 * 1000 } });
+  const { data: locData } = useGetDeviceLocations({
+    query: {
+      queryKey: getGetDeviceLocationsQueryKey(),
+      refetchInterval: 5 * 60 * 1000,
+    },
+  });
   const { data: moversResponse, isLoading: moversLoading } = useGetDeviceMovers({
-    query: { staleTime: 30 * 60 * 1000 },
+    query: {
+      queryKey: getGetDeviceMoversQueryKey(),
+      staleTime: 30 * 60 * 1000,
+    },
   });
   const { data: weeklyData, isLoading: weeklyLoading } = useGetWeeklyPattern();
 
@@ -137,8 +151,12 @@ export default function Dashboard() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (loading) { setIsSpinning(true); }
-    else { const t = setTimeout(() => setIsSpinning(false), 600); return () => clearTimeout(t); }
+    if (loading) {
+      setIsSpinning(true);
+      return;
+    }
+    const t = setTimeout(() => setIsSpinning(false), 600);
+    return () => clearTimeout(t);
   }, [loading]);
 
   useEffect(() => {
