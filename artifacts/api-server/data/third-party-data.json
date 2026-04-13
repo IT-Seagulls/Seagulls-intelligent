@@ -1,0 +1,23 @@
+{
+  "args": {},
+  "data": "{\"run\":2,\"value\":\"second\"}",
+  "files": {},
+  "form": {},
+  "headers": {
+    "Accept": "*/*",
+    "Accept-Encoding": "br, gzip, deflate",
+    "Accept-Language": "*",
+    "Content-Length": "26",
+    "Content-Type": "application/json",
+    "Host": "httpbin.org",
+    "Sec-Fetch-Mode": "cors",
+    "User-Agent": "node",
+    "X-Amzn-Trace-Id": "Root=1-69dc9b6f-461943ab0520272f76bc7b56"
+  },
+  "json": {
+    "run": 2,
+    "value": "second"
+  },
+  "origin": "109.237.205.138",
+  "url": "https://httpbin.org/post"
+}

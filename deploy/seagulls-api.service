@@ -1,0 +1,20 @@
+[Unit]
+Description=Seagulls traffic API (Express)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/seagulls/artifacts/api-server
+EnvironmentFile=/etc/seagulls/seagulls.env
+ExecStart=/usr/bin/node --enable-source-maps /opt/seagulls/artifacts/api-server/dist/index.mjs
+Restart=on-failure
+RestartSec=5
+
+# Hardening (optional; comment out if node path differs)
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
