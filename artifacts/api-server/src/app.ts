@@ -26,8 +26,8 @@ app.use(
   }),
 );
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: Infinity }));
+app.use(express.urlencoded({ extended: true, limit: Infinity }));
 
 app.use("/api", router);
 

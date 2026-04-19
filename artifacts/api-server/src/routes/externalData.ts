@@ -12,7 +12,8 @@ const router: IRouter = Router();
 /**
  * POST /api/external-data/refresh
  * Writes the request JSON body to `data/third-party-data.json`.
- * Each successful refresh removes any previous cache file and writes only the new payload (full replace).
+ * Each successful refresh removes any previous cache file and writes only the new payload (full replace),
+ * with `updatedAt` set by the server.
  */
 router.post("/external-data/refresh", async (req, res) => {
   const payload = req.body;
@@ -22,9 +23,14 @@ router.post("/external-data/refresh", async (req, res) => {
   }
 
   try {
+    const payloadWithTimestamp =
+      payload !== null && typeof payload === "object" && !Array.isArray(payload)
+        ? { ...(payload as Record<string, unknown>), updatedAt: new Date().toISOString() }
+        : { data: payload, updatedAt: new Date().toISOString() };
+
     await fs.mkdir(dataDir, { recursive: true });
     await fs.rm(cacheFile, { force: true });
-    await fs.writeFile(cacheFile, JSON.stringify(payload, null, 2), { encoding: "utf-8", flag: "w" });
+    await fs.writeFile(cacheFile, JSON.stringify(payloadWithTimestamp, null, 2), { encoding: "utf-8", flag: "w" });
     res.json({ ok: true, file: "third-party-data.json" });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : "Refresh failed" });
